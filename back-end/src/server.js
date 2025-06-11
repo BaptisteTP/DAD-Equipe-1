@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes');
 
 // Charger les variables d'environnement
 dotenv.config({ path: __dirname + '/.env' });
@@ -13,13 +14,14 @@ connectDB();
 const app = express();
 
 // === Middlewares globaux ===
-// Autoriser les requêtes CORS (à ajuster en prod si besoin)
+// Autoriser les requêtes CORS
 app.use(cors());
 
 // Pour parser le JSON dans le body des requêtes
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
 
 // === Routes de base (placeholder) ===
 // On pourra ultérieurement créer : /api/auth, /api/users, /api/posts, etc.
