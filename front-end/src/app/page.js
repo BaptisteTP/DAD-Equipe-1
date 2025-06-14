@@ -1,58 +1,32 @@
-"use client";
+'use client'
 
-import React, { useState } from 'react';
-import Input from '@/components/input';
-import Button from '@/components/button';
+import Image from 'next/image'
+import logo from '@/assets/breezy.png'
+import { useRouter } from 'next/navigation'
 
-const Page = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Nom: ${formData.username}\nEmail: ${formData.email}`);
-  };
+export default function Home() {
+  const router = useRouter()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">Inscription</h1>
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Nom d'utilisateur"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Jean Dupont"
-          />
-          <Input
-            label="Adresse email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="jean@example.com"
-          />
-          <Button 
-            type="submit"
-            className="mt-4 w-full bg-blue-600 text-white hover:bg-blue-700"
+    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-6">
+      <div className="w-full flex flex-col items-center space-y-10">
+        <Image src={logo} alt="Logo Breezy" width={140} height={140} />
+
+        <div className="w-full flex items-center flex-col space-y-4">
+          <button
+            onClick={() => router.push('/singin')}
+            className="bg-black text-white py-3 rounded-full w-[320px] h-[40px] hover:bg-gray-800 transition"
           >
-            S'inscrire 
-          </Button>
-          <p className="mt-4 text-sm text-center text-gray-600">
-            Déjà inscrit ? <a href="/login" className="text-blue-600 hover:underline">Connectez-vous</a>  
-          </p>
-        </form>
+            Sign-in
+          </button>
+          <button
+            onClick={() => router.push('/login')}
+            className="bg-black text-white py-3 rounded-full hover:bg-gray-800 transition w-[320px] h-[40px] -center"
+          >
+            Login
+          </button>
+        </div>
       </div>
     </div>
-  );
-};
-
-export default Page;
+  )
+}
