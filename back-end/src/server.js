@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const likeRoutes = require('./routes/likeRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const followRoutes = require('./routes/followRoutes');
 
 // Charger les variables d'environnement
 dotenv.config({ path: __dirname + '/.env' });
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/posts', likeRoutes);
 app.use('/api/posts/:postId/comments', commentRoutes);
+app.use('/api/users', followRoutes);
 
 
 // === Routes de base (placeholder) ===
