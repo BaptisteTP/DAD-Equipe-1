@@ -2,9 +2,11 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const likeRoutes = require('./routes/likeRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 
 // Charger les variables d'environnement
 dotenv.config({ path: __dirname + '/.env' });
@@ -24,6 +26,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/posts', likeRoutes);
+app.use('/api/posts/:postId/comments', commentRoutes);
+
 
 // === Routes de base (placeholder) ===
 // On pourra ultérieurement créer : /api/auth, /api/users, /api/posts, etc.
