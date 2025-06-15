@@ -1,4 +1,5 @@
 const express      = require('express');
+const { param }    = require('express-validator');
 const router       = express.Router({ mergeParams: true });
 const authenticate = require('../middleware/authJwt');
 const {
@@ -7,17 +8,58 @@ const {
   getFollowing,
   getFollowers,
 } = require('../controllers/followController');
+const validate     = require('../middleware/validate');
 
-// POST   /api/users/:userId/follow    → suivre
-router.post('/:userId/follow', authenticate, followUser);
+// Suivre un utilisateur
+router.post(
+  '/:userId/follow',
+  authenticate,
+  [
+    param('userId')
+      .isMongoId()
+      .withMessage('userId invalide.')
+  ],
+  validate,
+  followUser
+);
 
-// DELETE /api/users/:userId/follow    → se désabonner
-router.delete('/:userId/follow', authenticate, unfollowUser);
+// Se désabonner
+router.delete(
+  '/:userId/follow',
+  authenticate,
+  [
+    param('userId')
+      .isMongoId()
+      .withMessage('userId invalide.')
+  ],
+  validate,
+  unfollowUser
+);
 
-// GET    /api/users/:userId/following → liste des suivis
-router.get('/:userId/following', authenticate, getFollowing);
+// Lister les personnes suivies (/following)
+router.get(
+  '/:userId/following',
+  authenticate,
+  [
+    param('userId')
+      .isMongoId()
+      .withMessage('userId invalide.')
+  ],
+  validate,
+  getFollowing
+);
 
-// GET    /api/users/:userId/followers → liste des abonnés
-router.get('/:userId/followers', authenticate, getFollowers);
+// Lister les abonnés (/followers)
+router.get(
+  '/:userId/followers',
+  authenticate,
+  [
+    param('userId')
+      .isMongoId()
+      .withMessage('userId invalide.')
+  ],
+  validate,
+  getFollowers
+);
 
 module.exports = router;
