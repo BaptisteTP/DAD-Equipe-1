@@ -1,7 +1,10 @@
 // src/controllers/userController.js
 const User   = require('../models/User');
 const Post   = require('../models/Post');
+const Comment= require('../models/Comment');
+const Like   = require('../models/Like');
 const Follow = require('../models/Follow');
+
 
 const getUserProfile = async (req, res, next) => {
   try {
@@ -39,4 +42,61 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { getUserProfile };
+// PATCH /api/users/:userId
+const updateProfile = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    // On n'autorise que la MAJ de son propre profil
+    if (!req.user._id.equals(userId)) {
+      return res.status(403).json({ message: 'Accès non autorisé.' });
+    }
+
+    // Champs autorisés
+    const { bio, avatarUrl } = req.body;
+    const updates = {};
+    if (bio !== undefined)       updates.bio = bio;
+    if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true, select: '-password' }
+    );
+
+    res.json({ message: 'Profil mis à jour.', user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/users/:userId
+const deleteAccount = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    if (!req.user._id.equals(userId)) {
+      return res.status(403).json({ message: 'Accès non autorisé.' });
+    }
+
+    // 1) Supprimer l'utilisateur
+    await User.findByIdAndDelete(userId);
+
+    // 2) Supprimer tout ce qui se rapporte à lui
+    await Promise.all([
+      Post.deleteMany({ author: userId }),
+      Comment.deleteMany({ author: userId }),
+      Like.deleteMany({ user: userId }),
+      Follow.deleteMany({ follower: userId }),
+      Follow.deleteMany({ following: userId }),
+    ]);
+
+    res.json({ message: 'Compte et données associées supprimés.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getUserProfile,
+  updateProfile,
+  deleteAccount
+};

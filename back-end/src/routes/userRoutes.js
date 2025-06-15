@@ -1,11 +1,20 @@
+// src/routes/userRoutes.js
 const express      = require('express');
 const router       = express.Router();
 const authenticate = require('../middleware/authJwt');
-const { getUserProfile } = require('../controllers/userController');
+const {
+  getUserProfile,
+  updateProfile,
+  deleteAccount
+} = require('../controllers/userController');
 
-// GET /api/users/:userId
-// Récupère le profil (username, bio, avatarUrl, dates) ainsi que
-// le nombre d'abonnés/abonnements/posts et la liste de ses posts.
+// GET   /api/users/:userId         → profil + stats + posts
 router.get('/:userId', authenticate, getUserProfile);
+
+// PATCH /api/users/:userId         → mise à jour bio/avatar
+router.patch('/:userId', authenticate, updateProfile);
+
+// DELETE /api/users/:userId        → suppression de compte et cascade
+router.delete('/:userId', authenticate, deleteAccount);
 
 module.exports = router;
