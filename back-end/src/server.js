@@ -1,34 +1,56 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
+// src/server.js
 
-// Charger les variables d'environnement
-dotenv.config({ path: __dirname + '/.env' });
+// 1. Charger les variables d'environnement
+require('dotenv').config({ path: __dirname + '/.env' });
 
-// Connexion à MongoDB
-connectDB();
+const express       = require('express');
+const cors          = require('cors');
+const helmet        = require('helmet');
+const rateLimit     = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xssClean      = require('xss-clean');
+
+const connectDB     = require('./config/db');
+const authRoutes    = require('./routes/authRoutes');
+const postRoutes    = require('./routes/postRoutes');
+const likeRoutes    = require('./routes/likeRoutes');
+const commentRoutes = require('./routes/commentRoutes');
+const followRoutes  = require('./routes/followRoutes');
+const userRoutes    = require('./routes/userRoutes');
 
 const app = express();
 
-// === Middlewares globaux ===
-// Autoriser les requêtes CORS (à ajuster en prod si besoin)
-app.use(cors());
+// 2. Connexion à MongoDB
+connectDB();
 
-// Pour parser le JSON dans le body des requêtes
-app.use(express.json());
+// 3. Middlewares de sécurité
+app.use(helmet());                              // Sécuriser les headers HTTP
+app.use(mongoSanitize());                       // Éviter les injections NoSQL
+app.use(xssClean());                            // Protéger du XSS
+app.use(rateLimit({                             // Limiter le nombre de requêtes
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Trop de requêtes depuis cette IP, réessayez dans 15 minutes'
+}));
 
+// 4. Middlewares globaux
+app.use(cors());                                // Autoriser CORS
+app.use(express.json());                        // Parser le JSON
+
+// 5. Routes de l’API
 app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/posts', likeRoutes);
+app.use('/api/posts/:postId/comments', commentRoutes);
+app.use('/api/users', followRoutes);
+app.use('/api/users', userRoutes);
 
-// === Routes de base (placeholder) ===
-// On pourra ultérieurement créer : /api/auth, /api/users, /api/posts, etc.
+// 6. Route de base (vérification)
 app.get('/', (req, res) => {
   res.json({ message: 'Bienvenue sur l\'API Breezy !' });
 });
 
-// === Gestionnaire d’erreurs générique ===
-// Cette fonction attrape les erreurs lancées depuis les controllers
+// 7. Gestionnaire d’erreurs global
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const status = err.statusCode || 500;
@@ -40,6 +62,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// 8. Démarrage du serveur
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
