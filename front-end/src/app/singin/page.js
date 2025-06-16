@@ -56,7 +56,7 @@ export default function Home() {
                 placeholder="Password@1234"/>
             </div>
             <button
-                onClick={() => router.push('/login')}
+                onClick={() => router.push('/singin/profile')}
                 className="bg-black text-white py-2 rounded-full hover:bg-gray-800 transition duration-300 cursor-pointer w-[320px] h-[40px]"
             >
                 Sing-in
