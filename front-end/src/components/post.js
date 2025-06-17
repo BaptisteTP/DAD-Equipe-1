@@ -7,7 +7,6 @@ const Post = ({ username, date, content }) => {
         <div className="w-10 h-10 bg-gray-300 rounded-full mr-3" />
         <div>
           <p className="font-semibold">{username}</p>
-          <p className="text-xs text-gray-500">{date}</p>
         </div>
       </div>
 

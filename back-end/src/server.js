@@ -24,9 +24,8 @@ const app = express();
 connectDB();
 
 // 3. Middlewares de sécurité
-app.use(helmet());                              // Sécuriser les headers HTTP
-app.use(mongoSanitize());                       // Éviter les injections NoSQL
-app.use(xssClean());                            // Protéger du XSS
+// app.use(helmet());                              // Sécuriser les headers HTTP
+// app.use(xssClean());                            // Protéger du XSS
 app.use(rateLimit({                             // Limiter le nombre de requêtes
   windowMs: 15 * 60 * 1000,
   max: 100,
