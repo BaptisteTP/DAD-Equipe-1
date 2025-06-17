@@ -1,5 +1,3 @@
-// src/server.js
-
 // 1. Charger les variables d'environnement
 require('dotenv').config({ path: __dirname + '/.env' });
 
@@ -7,16 +5,11 @@ const express       = require('express');
 const cors          = require('cors');
 const helmet        = require('helmet');
 const rateLimit     = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
-const xssClean      = require('xss-clean');
 
 const connectDB     = require('./config/db');
-const authRoutes    = require('./routes/authRoutes');
 const postRoutes    = require('./routes/postRoutes');
 const likeRoutes    = require('./routes/likeRoutes');
 const commentRoutes = require('./routes/commentRoutes');
-const followRoutes  = require('./routes/followRoutes');
-const userRoutes    = require('./routes/userRoutes');
 
 const app = express();
 
@@ -24,8 +17,7 @@ const app = express();
 connectDB();
 
 // 3. Middlewares de sécurité
-// app.use(helmet());                              // Sécuriser les headers HTTP
-// app.use(xssClean());                            // Protéger du XSS
+app.use(helmet());                              // Sécuriser les headers HTTP
 app.use(rateLimit({                             // Limiter le nombre de requêtes
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -37,17 +29,9 @@ app.use(cors());                                // Autoriser CORS
 app.use(express.json());                        // Parser le JSON
 
 // 5. Routes de l’API
-app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/posts', likeRoutes);
 app.use('/api/posts/:postId/comments', commentRoutes);
-app.use('/api/users', followRoutes);
-app.use('/api/users', userRoutes);
-
-// 6. Route de base (vérification)
-app.get('/', (req, res) => {
-  res.json({ message: 'Bienvenue sur l\'API Breezy !' });
-});
 
 // 7. Gestionnaire d’erreurs global
 app.use((err, req, res, next) => {
@@ -62,7 +46,7 @@ app.use((err, req, res, next) => {
 });
 
 // 8. Démarrage du serveur
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4002;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
 });
