@@ -1,18 +1,18 @@
-import logo from '../assets/breezy.png';
+import breezyLogo from "@/assets/breezy.svg";
+import profileIcon from "@/assets/default_user.svg";
+import Image from "next/image";
 
 export default function Header() {
   return (
-    <footer className="bg-gray-800 text-white py-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <img src={logo} alt="Logo" className="h-8 w-8" />
-          <span className="text-sm">© 2023 Mon Application</span>
-        </div>
-        <nav className="space-x-4">
-          <a href="/about" className="text-sm hover:underline">À propos</a>
-          <a href="/contact" className="text-sm hover:underline">Contact</a>
-        </nav>
+    <header className="border border-blue-500 rounded-md py-2 px-4 flex justify-between items-center w-full bg-white">
+      <Image src={profileIcon} alt="Profile Icon" className="h-8 w-8 rounded-full" />
+
+      <div className="flex flex-col items-center">
+        <Image src={breezyLogo} alt="Breezy Logo" className="h-25" />
       </div>
-    </footer>
+      <div className="flex items-center space-x-4">
+      </div>
+
+    </header>
   );
 }
