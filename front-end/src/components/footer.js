@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t shadow z-50">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t z-50">
       <nav className="flex justify-around items-center py-3 text-gray-700">
         <button className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"

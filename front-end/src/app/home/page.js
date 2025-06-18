@@ -8,7 +8,7 @@ import Post from '@/components/post';
 
 export default function App() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+    <div className="flex flex-col min-h-screen bg-white text-gray-900">
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-6 space-y-6">

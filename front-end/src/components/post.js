@@ -3,15 +3,15 @@ import Image from "next/image";
 
 const Post = ({ username, content, image, like, comment, share }) => {
   return (
-    <div className="max-w-md mx-auto bg-white shadow-md rounded-xl p-4 mb-4 border">
+    <div className="max-w-md mx-auto bg-white p-4 mb-2 border-b"> {/* border-b et mb-2 */}
       <div className="flex items-center mb-3">
-        <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border">
           <Image
             src={image}
             alt={`${username} profile`}
             width={40}
             height={40}
-            className="object-cover w-full h-full"
+            className="object-cover w-full h-full "
           />
         </div>
         <div>
@@ -23,6 +23,7 @@ const Post = ({ username, content, image, like, comment, share }) => {
 
       <div className="flex justify-between text-sm text-gray-600">
         <button className="flex items-center gap-1 hover:text-blue-600">
+          {/* icône like */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -41,6 +42,7 @@ const Post = ({ username, content, image, like, comment, share }) => {
         </button>
 
         <button className="flex items-center gap-1 hover:text-blue-600">
+          {/* icône comment */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -59,6 +61,7 @@ const Post = ({ username, content, image, like, comment, share }) => {
         </button>
 
         <button className="flex items-center gap-1 hover:text-blue-600">
+          {/* icône share */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

@@ -4,15 +4,25 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <header className="border border-blue-500 rounded-md py-2 px-4 flex justify-between items-center w-full bg-white">
-      <Image src={profileIcon} alt="Profile Icon" className="h-8 w-8 rounded-full" />
-
-      <div className="flex flex-col items-center">
-        <Image src={breezyLogo} alt="Breezy Logo" className="h-25" />
+    <header className="relative border-b rounded-b-md py-2 px-6 flex items-center w-full bg-white h-16">
+      {/* Icône profil à gauche */}
+      <div className="h-10 w-10 rounded-full border border-gray-300 overflow-hidden z-10">
+        <Image
+          src={profileIcon}
+          alt="Profile Icon"
+          className="h-full w-full object-cover rounded-full"
+        />
       </div>
-      <div className="flex items-center space-x-4">
-      </div>
 
+      {/* Logo centré avec position absolue */}
+      <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+        <Image
+          src={breezyLogo}
+          alt="Breezy Logo"
+          className="h-25 w-auto" // ← plus grand
+        />
+      </div>
+      <div className="h-10 w-10" />
     </header>
   );
 }
