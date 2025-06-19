@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import Image from 'next/image'
-import defaultAvatar from '@/assets/default-image.jpg'
+import defaultAvatar from '@/assets/default-image.jpg' // change selon ton arborescence
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null)
@@ -64,6 +64,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 bg-white rounded shadow">
+      {/* Header profil */}
       <div className="flex items-center space-x-4 mb-6">
         <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-300">
           <Image
@@ -86,6 +87,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Posts */}
       <div className="space-y-6">
         {Array.isArray(posts) && posts.length === 0 && <p>Aucun post à afficher</p>}
         {Array.isArray(posts) &&

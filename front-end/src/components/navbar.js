@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Navbar() {
   const handleProfileClick = () => {
-    window.location.href = '/profile/me';
+    window.location.href = '/profile';
   };
 
   return (
