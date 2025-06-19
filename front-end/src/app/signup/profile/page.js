@@ -6,9 +6,18 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import defaultAvatar from '@/assets/default-image.jpg'
 
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]))
+  } catch {
+    return null
+  }
+}
+
 export default function ProfileSetup() {
   const router = useRouter()
   const fileInputRef = useRef(null)
+  const [bio, setBio] = useState('')
   const [profileImage, setProfileImage] = useState(null)
 
   const handleImageChange = (e) => {
@@ -16,15 +25,59 @@ export default function ProfileSetup() {
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setProfileImage(reader.result)
+        setProfileImage(reader.result) // base64 string
       }
       reader.readAsDataURL(file)
     }
   }
 
-  const triggerFileSelect = () => {
-    fileInputRef.current?.click()
+  const handleSubmit = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Utilisateur non connecté')
+      router.push('/signin')
+      return
+    }
+
+    const payload = parseJwt(token)
+    if (!payload || !payload.userId) {
+      alert('Token invalide')
+      router.push('/signin')
+      return
+    }
+
+    const userId = payload.userId
+
+    const dataToSend = { bio }
+    if (profileImage) {
+      dataToSend.avatarUrl = profileImage
+    }
+
+    try {
+      const res = await fetch(`http://localhost:4001/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(dataToSend),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.message || 'Erreur lors de la mise à jour')
+        return
+      }
+
+      router.push('/home')
+    } catch (err) {
+      console.error(err)
+      alert("Une erreur est survenue lors de l'enregistrement du profil")
+    }
   }
+
+  const triggerFileSelect = () => fileInputRef.current?.click()
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-6">
@@ -53,19 +106,19 @@ export default function ProfileSetup() {
             <span className="text-sm text-gray-500">Cliquez pour changer la photo</span>
           </div>
 
-          {/* Bio */}
           <div className="flex flex-col space-y-2 w-[320px]">
             <label className="text-sm font-medium text-gray-900">Bio :</label>
             <textarea
               rows={4}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
               placeholder="Parlez un peu de vous..."
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 resize-none"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 resize-none"
             />
           </div>
 
-          {/* Bouton */}
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={handleSubmit}
             className="bg-black text-white py-2 rounded-full hover:bg-gray-800 transition duration-300 cursor-pointer w-[320px] h-[40px]"
           >
             Continuer
