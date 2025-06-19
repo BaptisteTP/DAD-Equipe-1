@@ -2,9 +2,9 @@
 
 import Image from 'next/image'
 import logo from '@/assets/breezy.png'
-import defaultAvatar from '@/assets/default-image.jpg'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
+import defaultAvatar from '@/assets/default-image.jpg'
 
 function parseJwt(token) {
   try {
@@ -19,35 +19,15 @@ export default function ProfileSetup() {
   const fileInputRef = useRef(null)
   const [bio, setBio] = useState('')
   const [profileImage, setProfileImage] = useState(null)
-  const [uploading, setUploading] = useState(false)
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', 'projet_preset')
-
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/daqtp8x9y/image/upload`, { 
-        method: 'POST',
-        body: formData,
-      })
-      const data = await res.json()
-      console.log('Cloudinary response:', data) 
-      if (data.secure_url) {
-        setProfileImage(data.secure_url)
-      } else {
-        alert('Erreur lors de l\'upload de l\'image : ' + (data.error?.message || 'Réponse inconnue'))
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfileImage(reader.result) // base64 string
       }
-    } catch (err) {
-      console.error(err)
-      alert('Erreur lors de l\'upload de l\'image (exception)')
-    } finally {
-      setUploading(false)
+      reader.readAsDataURL(file)
     }
   }
 
@@ -55,17 +35,18 @@ export default function ProfileSetup() {
     const token = localStorage.getItem('token')
     if (!token) {
       alert('Utilisateur non connecté')
-      router.push('/signup')
+      router.push('/signin')
       return
     }
 
     const payload = parseJwt(token)
-    const userId = payload?.userId
-    if (!userId) {
+    if (!payload || !payload.userId) {
       alert('Token invalide')
-      router.push('/signup')
+      router.push('/signin')
       return
     }
+
+    const userId = payload.userId
 
     const dataToSend = { bio }
     if (profileImage) {
@@ -96,6 +77,8 @@ export default function ProfileSetup() {
     }
   }
 
+  const triggerFileSelect = () => fileInputRef.current?.click()
+
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-6">
       <div className="w-full flex flex-col items-center space-y-10">
@@ -105,7 +88,7 @@ export default function ProfileSetup() {
           <div className="flex flex-col items-center space-y-2">
             <div
               className="w-24 h-24 rounded-full overflow-hidden cursor-pointer border-2 border-gray-300 hover:opacity-80 transition"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={triggerFileSelect}
             >
               <img
                 src={profileImage || defaultAvatar.src}
@@ -119,11 +102,8 @@ export default function ProfileSetup() {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
-              disabled={uploading}
             />
-            <span className="text-sm text-gray-500">
-              {uploading ? 'Upload en cours...' : 'Cliquez pour changer la photo'}
-            </span>
+            <span className="text-sm text-gray-500">Cliquez pour changer la photo</span>
           </div>
 
           <div className="flex flex-col space-y-2 w-[320px]">
@@ -139,7 +119,6 @@ export default function ProfileSetup() {
 
           <button
             onClick={handleSubmit}
-            disabled={uploading}
             className="bg-black text-white py-2 rounded-full hover:bg-gray-800 transition duration-300 cursor-pointer w-[320px] h-[40px]"
           >
             Continuer

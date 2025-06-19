@@ -33,7 +33,7 @@ export default function Signin() {
       }
 
       localStorage.setItem('token', data.token)
-      router.push('/home')
+      router.push('/home') // ✅ Redirection vers /home après connexion réussie
     } catch (error) {
       console.error(error)
       alert('Une erreur est survenue')
