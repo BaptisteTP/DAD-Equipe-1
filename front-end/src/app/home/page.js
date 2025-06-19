@@ -35,7 +35,6 @@ export default function App() {
       </div>
 
       <div className="flex flex-1">
-        {/* Navbar mobile affichée dynamiquement */}
         {isNavbarOpen && (
           <div
             ref={navbarRef}
@@ -45,7 +44,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Navbar desktop permanente */}
         <div className="hidden lg:block">
           <Navbar />
         </div>
