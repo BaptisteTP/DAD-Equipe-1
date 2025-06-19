@@ -1,6 +1,10 @@
 import React from 'react';
 
 export default function Navbar() {
+  const handleProfileClick = () => {
+    window.location.href = '/profile';
+  };
+
   return (
     <aside className="flex flex-col justify-between w-64 h-screen p-6 bg-white border-r border-gray-200">
       <div>
@@ -12,7 +16,9 @@ export default function Navbar() {
         </div>
 
         <nav className="space-y-6 pl-2">
-          <NavItem icon={<UserIcon className="w-5 h-5 text-gray-600" />} label="Profile" />
+          <div onClick={handleProfileClick}>
+            <NavItem icon={<UserIcon className="w-5 h-5 text-gray-600" />} label="Profile" />
+          </div>
           <NavItem icon={<HomeIcon className="w-5 h-5 text-gray-600" />} label="Home" />
           <NavItem icon={<LikeIncon className="w-5 h-5 text-gray-600" />} label="Like" />
           <NavItem icon={<SearchIcon className="w-5 h-5 text-gray-600" />} label="Search" />
