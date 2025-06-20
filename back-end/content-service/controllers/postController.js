@@ -16,18 +16,17 @@ const createPost = async (req, res, next) => {
         .json({ message: 'Le contenu doit faire entre 1 et 280 caractères.' });
     }
 
-    // 1) Récupérer les infos de l'utilisateur depuis le user‐service
     const token = req.headers.authorization;
-    const { data: userData } = await axios.get(
+    const { data } = await axios.get(
       `${USER_SERVICE_URL}/api/users/${req.user.userId}`,
       { headers: { Authorization: token } }
     );
+    const { username, avatarUrl } = data.user;
 
-    // 2) Créer le post en stockant l'id + info statiques de l'auteur
     const newPost = await Post.create({
       authorId:        req.user.userId,
-      authorUsername:  userData.username,
-      authorAvatarUrl: userData.avatarUrl,
+      authorUsername:  username,
+      authorAvatarUrl: avatarUrl,
       content,
     });
 
