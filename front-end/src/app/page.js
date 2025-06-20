@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import logo from '@/assets/breezy.svg'
+import logo from '@/assets/breezy.png'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {

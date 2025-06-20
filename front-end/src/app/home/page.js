@@ -38,7 +38,7 @@ export default function App() {
         {isNavbarOpen && (
           <div
             ref={navbarRef}
-            className="fixed z-40 inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-gray-200 lg:hidden"
+            className="fixed z-40 inset-y-0 left-0 w-64 bg-base-100 shadow-lg border-r border-gray-200 lg:hidden"
           >
             <Navbar />
           </div>
