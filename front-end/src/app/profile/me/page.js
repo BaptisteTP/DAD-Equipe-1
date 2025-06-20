@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import Image from 'next/image'
-import defaultAvatar from '@/assets/default-image.jpg' // change selon ton arborescence
+import defaultAvatar from '@/assets/default-image.jpg'
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null)
