@@ -16,6 +16,7 @@ const createPost = async (req, res, next) => {
         .json({ message: 'Le contenu doit faire entre 1 et 280 caractères.' });
     }
 
+
     const token = req.headers.authorization;
     const { data } = await axios.get(
       `${USER_SERVICE_URL}/api/users/${req.user.userId}`,
