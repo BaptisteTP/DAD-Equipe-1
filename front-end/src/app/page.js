@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import logo from '@/assets/breezy.svg'
+import logo from '@/assets/breezy.png'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
@@ -14,10 +14,10 @@ export default function Home() {
 
         <div className="w-full flex items-center flex-col space-y-4">
           <button
-            onClick={() => router.push('/singin')}
+            onClick={() => router.push('/signup')}
             className="bg-black text-white py-3 rounded-full w-[320px] h-[40px] hover:bg-gray-800 transition"
           >
-            Sign-in
+            Sign-up
           </button>
           <button
             onClick={() => router.push('/login')}

@@ -1,4 +1,3 @@
-// components/Header.tsx
 import breezyLogo from "@/assets/breezy.svg";
 import profileIcon from "@/assets/default_user.svg";
 import Image from "next/image";

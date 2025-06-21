@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Liste des utilisateurs (à remplacer plus tard par une vraie source)
 const users = ['Alice', 'Bob', 'Charlie', 'Diane'];
 
 export default function UserList() {
@@ -19,7 +18,6 @@ export default function UserList() {
   );
 }
 
-// Icône utilisateur
 function UserIcon(props) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none"
