@@ -9,13 +9,15 @@ export default function MyProfilePage() {
   const router = useRouter()
 
   // États
-  const [user, setUser]         = useState(null)
-  const [posts, setPosts]       = useState([])
-  const [likedIds, setLikedIds] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
+  const [user, setUser]           = useState(null)
+  const [posts, setPosts]         = useState([])
+  const [likedPosts, setLikedPosts] = useState([])
+  const [likedIds, setLikedIds]   = useState([])
+  const [selectedTab, setSelectedTab] = useState('posts') // 'posts' ou 'liked'
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState('')
 
-  // Décode le JWT pour avoir userId
+  // Décodage simple du JWT
   function parseJwt(token) {
     try {
       return JSON.parse(atob(token.split('.')[1]))
@@ -24,7 +26,7 @@ export default function MyProfilePage() {
     }
   }
 
-  // 1) Au montage, fetch profil + ses posts + liked posts
+  // 1) Au montage, on charge : profil, posts, likedPosts
   useEffect(() => {
     async function fetchAll() {
       setLoading(true)
@@ -36,13 +38,10 @@ export default function MyProfilePage() {
         const { userId } = parseJwt(token)
         if (!userId) throw new Error('Token invalide')
 
-        // Lancer en parallèle
+        // requêtes parallèles
         const [uRes, pRes, lRes] = await Promise.all([
           fetch(`http://localhost:4001/api/users/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }),
           fetch(`http://localhost:4002/api/posts/user/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -64,6 +63,7 @@ export default function MyProfilePage() {
 
         setUser({ ...uData.user, stats: uData.stats })
         setPosts(pData)
+        setLikedPosts(lData)
         setLikedIds(lData.map(post => post._id))
       } catch (err) {
         setError(err.message)
@@ -75,31 +75,31 @@ export default function MyProfilePage() {
   }, [])
 
   // 2) Toggle like/unlike
+// 2) Toggle like/unlike
   const handleToggleLike = async (postId, isCurrentlyLiked) => {
     try {
       const token = localStorage.getItem('token')
       if (!token) throw new Error('Utilisateur non connecté')
 
+      // 2.a) Appel POST ou DELETE
       const res = await fetch(
           `http://localhost:4002/api/posts/${postId}/like`,
           {
             method: isCurrentlyLiked ? 'DELETE' : 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
       )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
-      // Met à jour la liste des likes
+      // 2.b) Met à jour la liste des IDs likés
       setLikedIds(ids =>
           isCurrentlyLiked
               ? ids.filter(id => id !== postId)
               : [...ids, postId]
       )
-      // Met à jour le compteur dans posts
+
+      // 2.c) Met à jour le compteur dans posts
       setPosts(list =>
           list.map(p =>
               p._id === postId
@@ -107,14 +107,29 @@ export default function MyProfilePage() {
                   : p
           )
       )
+
+      // 2.d) Met à jour likedPosts : on supprime ou on ajoute le post avec le nouveau compteur
+      setLikedPosts(list => {
+        if (isCurrentlyLiked) {
+          // Si on enlève le like → on filtre
+          return list.filter(p => p._id !== postId)
+        } else {
+          // Si on ajoute le like → on reconstruit un nouvel objet avec le compteur incrémenté
+          const orig = posts.find(p => p._id === postId)
+          if (!orig) return list
+          const updated = { ...orig, likesCount: orig.likesCount + 1 }
+          return [updated, ...list]
+        }
+      })
     } catch (err) {
       alert(err.message)
     }
   }
-
-  // Affichage loading / erreur
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error)   return <div className="p-4 text-center text-red-500">{error}</div>
+
+  // Choix de la liste à afficher selon l’onglet
+  const displayList = selectedTab === 'posts' ? posts : likedPosts
 
   return (
       <div className="min-h-screen p-4 bg-white font-sans">
@@ -122,28 +137,20 @@ export default function MyProfilePage() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => router.push('/home')}
-              className="w-6 h-6 text-gray-800 hover:text-gray-900"
-              aria-label="Home"
+                onClick={() => router.push('/home')}
+                className="w-6 h-6 text-gray-800 hover:text-gray-900"
+                aria-label="Home"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-full h-full"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2
-                     0 0 1-2-2v-5H9v5a2 2 0 0 1-2 2H3a2 2
-                     0 0 1-2-2V9z"
-                />
-                        </svg>
-                    </button>
-            <button onClick={() => router.back()} className="text-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor"
+                   className="w-full h-full">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2
+                       0 0 1-2-2v-5H9v5a2 2 0 0 1-2 2H3a2 2
+                       0 0 1-2-2V9z"/>
+              </svg>
+            </button>
+            <button onClick={() => router.back()} className="text-gray-800 hover:text-gray-900">
               ← Retour
             </button>
           </div>
@@ -170,12 +177,40 @@ export default function MyProfilePage() {
           </div>
         </div>
 
-        {/* Liste des posts */}
+        {/* Onglets */}
+        <div className="border-b mb-4 flex space-x-6">
+          <button
+              onClick={() => setSelectedTab('posts')}
+              className={`pb-2 ${
+                  selectedTab === 'posts'
+                      ? 'border-b-2 border-black text-black'
+                      : 'text-gray-500'
+              }`}
+          >
+            Mes posts
+          </button>
+          <button
+              onClick={() => setSelectedTab('liked')}
+              className={`pb-2 ${
+                  selectedTab === 'liked'
+                      ? 'border-b-2 border-black text-black'
+                      : 'text-gray-500'
+              }`}
+          >
+            Liked
+          </button>
+        </div>
+
+        {/* Contenu de l’onglet */}
         <div className="space-y-4">
-          {posts.length === 0 ? (
-              <p className="text-center text-gray-800">Aucun post publié.</p>
+          {displayList.length === 0 ? (
+              <p className="text-center text-gray-800">
+                {selectedTab === 'posts'
+                    ? 'Aucun post publié.'
+                    : 'Aucun post liké.'}
+              </p>
           ) : (
-              posts.map(post => {
+              displayList.map(post => {
                 const isLiked = likedIds.includes(post._id)
                 return (
                     <Post
