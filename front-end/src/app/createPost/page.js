@@ -83,7 +83,7 @@ export default function CreatePostPage() {
 
       setContent('');
       setError('');
-      router.push('/');
+      router.push('/home');
     } catch (err) {
       setError('Erreur réseau.');
     }
