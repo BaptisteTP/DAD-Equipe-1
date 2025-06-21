@@ -176,6 +176,17 @@ export default function MyProfilePage() {
             {user.bio && <p className="mt-2 text-gray-700">{user.bio}</p>}
           </div>
         </div>
+        {user.stats && (
+            <div className="flex space-x-6 text-sm text-gray-600 mb-4">
+    <span>
+      <strong>{user.stats.followingCount}</strong> Abonnements
+    </span>
+              <span>
+      <strong>{user.stats.followersCount}</strong> Abonnés
+    </span>
+            </div>
+        )}
+
 
         {/* Onglets */}
         <div className="border-b mb-4 flex space-x-6">
