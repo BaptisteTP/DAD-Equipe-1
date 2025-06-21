@@ -29,7 +29,9 @@ router.patch(
   '/:userId',
   authenticate,
   [
-    param('userId').isMongoId().withMessage('userId invalide.'),
+    param('userId').isMongoId(),
+      // Autoriser le nouveau username
+    body('username').optional().isLength({ min: 3, max: 30 }).withMessage('Le username doit faire entre 3 et 30 caractères.'),
     body('bio').optional().isString().isLength({ max: 160 }),
     body('avatarUrl').optional().isURL().withMessage('URL invalide')
   ],
