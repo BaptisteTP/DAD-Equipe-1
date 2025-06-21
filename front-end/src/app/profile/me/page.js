@@ -1,104 +1,145 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { jwtDecode } from 'jwt-decode'
-import Image from 'next/image'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Post from '@/components/post'
 import defaultAvatar from '@/assets/default-image.jpg'
 
-export default function ProfilePage() {
-  const [user, setUser] = useState(null)
-  const [posts, setPosts] = useState([])
+export default function MyProfilePage() {
+  const router = useRouter()
+  const [user, setUser]       = useState(null)
+  const [posts, setPosts]     = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError]     = useState('')
+
+  function parseJwt(token) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]))
+    } catch {
+      return null
+    }
+  }
 
   useEffect(() => {
-    async function fetchUser() {
-      const token = localStorage.getItem('token')
-
-      if (!token) {
-        setError('Utilisateur non connecté.')
-        setLoading(false)
-        return
-      }
-
-      let userId
+    async function fetchMe() {
+      setLoading(true)
+      setError('')
       try {
-        const decoded = jwtDecode(token)
-        userId = decoded.userId
-        if (!userId) throw new Error()
-      } catch {
-        setError("Token JWT invalide.")
-        setLoading(false)
-        return
-      }
+        const token = localStorage.getItem('token')
+        if (!token) throw new Error('Utilisateur non connecté')
 
-      try {
-        const res = await fetch(`http://localhost:4001/api/users/${userId}`, {
+        const decoded = parseJwt(token)
+        if (!decoded?.userId) throw new Error('Token invalide')
+        const userId = decoded.userId
+
+        // Profil + stats
+        const resUser = await fetch(`http://localhost:4001/api/users/${userId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         })
+        const uData = await resUser.json()
+        if (!resUser.ok) throw new Error(uData.message || 'Erreur profil')
 
-        if (!res.ok) {
-          const errorData = await res.json()
-          throw new Error(errorData.message || 'Erreur lors du chargement du profil')
-        }
+        // Posts
+        const resPosts = await fetch(`http://localhost:4002/api/posts/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const pData = await resPosts.json()
+        if (!resPosts.ok) throw new Error(pData.message || 'Erreur posts')
 
-        const data = await res.json()
-        setUser(data.user)
-        setPosts(data.posts)
+        setUser(uData.user)
+        if (uData.stats) setUser(prev => ({ ...prev, stats: uData.stats }))
+        setPosts(pData)
       } catch (err) {
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
-
-    fetchUser()
+    fetchMe()
   }, [])
 
-  if (loading) return <p className="text-center">Chargement...</p>
-  if (error) return <p className="text-red-500 text-center">{error}</p>
-  if (!user) return <p className="text-center">Utilisateur non trouvé</p>
+  if (loading) return <div className="p-4 text-center">Chargement…</div>
+  if (error)   return <div className="p-4 text-center text-red-500">{error}</div>
 
   return (
-    <div className="max-w-3xl mx-auto p-4 bg-white rounded shadow">
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-300">
-          <Image
-            src={user.avatarUrl || defaultAvatar}
-            alt={`Avatar de ${user.username}`}
-            width={80}
-            height={80}
-            className="object-cover"
-          />
+      <div className="min-h-screen p-4 space-y-4 font-sans bg-white">
+        {/* Header + modifier */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <button
+                onClick={() => router.push('/home')}
+                className="w-6 h-6 text-gray-800 hover:text-gray-900"
+                aria-label="Home"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor"
+                   className="w-full h-full">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2
+                       0 0 1-2-2v-5H9v5a2 2 0 0 1-2 2H3a2 2
+                       0 0 1-2-2V9z"/>
+              </svg>
+            </button>
+            <button
+                onClick={() => router.back()}
+                className="text-gray-800 hover:text-gray-900"
+            >
+              ← Retour
+            </button>
+          </div>
+          <button
+              onClick={() => router.push('/profile/me/edit')}
+              className="text-black px-4 py-1 border border-gray-800 rounded-full text-sm hover:bg-gray-300"
+          >
+            Modifier profil
+          </button>
         </div>
-        <div>
-          <h2 className="text-2xl font-semibold">{user.username}</h2>
-          <p className="text-gray-600 max-w-md">
-            {user.bio || 'Pas de description'}
-          </p>
-          <div className="flex space-x-6 mt-2 text-sm text-gray-700">
-            <div>{user.followingCount ?? 0} Following</div>
-            <div>{user.followersCount ?? 0} Followers</div>
+
+        {/* Profil utilisateur */}
+        <div className="flex items-center space-x-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden border">
+            {user.avatarUrl
+                ? <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover"/>
+                : <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">?</div>
+            }
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-black">{user.username}</h2>
+            <p className="text-gray-800">@{user.username}</p>
+            {user.bio && <p className="mt-2 text-gray-700">{user.bio}</p>}
           </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {Array.isArray(posts) && posts.length === 0 && <p>Aucun post à afficher</p>}
-        {Array.isArray(posts) &&
-          posts.map((post) => (
-            <div key={post._id} className="p-4 border border-gray-200 rounded">
-              <p className="whitespace-pre-line">{post.content}</p>
-              <div className="flex space-x-4 mt-3 text-sm text-gray-600">
-                <div>❤️ {post.likesCount ?? 0}</div>
-                <div>💬 {post.commentsCount ?? 0}</div>
-              </div>
+        {/* Stats */}
+        {user.stats && (
+            <div className="flex space-x-6 text-sm text-gray-600">
+              <span><strong>{user.stats.followingCount}</strong> Following</span>
+              <span><strong>{user.stats.followersCount}</strong> Followers</span>
             </div>
+        )}
+
+        {/* Liste des posts */}
+        <div className="space-y-4">
+          {posts.length === 0 && (
+              <p className="text-center text-gray-800">Aucun post publié.</p>
+          )}
+          {posts.map(post => (
+              <Post
+                  key={post._id}
+                  username={post.authorUsername}
+                  content={post.content}
+                  image={post.authorAvatarUrl || defaultAvatar.src}
+                  like={post.likesCount}
+                  comment={post.commentsCount ?? 0}
+                  share={0}
+              />
           ))}
+        </div>
       </div>
-    </div>
   )
 }

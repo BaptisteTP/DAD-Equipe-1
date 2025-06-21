@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const Post = ({ username, content, image, like, comment, share }) => {
   return (
-    <div className="max-w-md mx-auto bg-white p-4 mb-2 border-b"> 
+    <div className="max-w-md mx-auto bg-white p-4 mb-2 border-b">
       <div className="flex items-center mb-3">
         <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border">
           <Image
@@ -15,13 +15,13 @@ const Post = ({ username, content, image, like, comment, share }) => {
           />
         </div>
         <div>
-          <p className="font-semibold">{username}</p>
+          <p className="font-semibold text-black">{username}</p>
         </div>
       </div>
 
-      <p className="mb-3 ml-12">{content}</p>
+      <p className="mb-3 ml-12 text-black">{content}</p>
 
-      <div className="flex justify-between text-sm text-gray-600">
+      <div className="flex justify-between text-sm text-gray-800">
         <button className="flex items-center gap-1 hover:text-blue-600">
           <svg
             xmlns="http://www.w3.org/2000/svg"
