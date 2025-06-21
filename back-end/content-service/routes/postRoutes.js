@@ -2,8 +2,9 @@ const express      = require('express');
 const { body }    = require('express-validator');
 const router       = express.Router();
 const authenticate = require('../middleware/authJwt');
-const { createPost, getUserPosts, getFeed } = require('../controllers/postController');
+const { createPost, getUserPosts, getFeed, getLikedPosts } = require('../controllers/postController');
 const validate   = require('../middleware/validate');
+
 
 // Créer un post
 router.post(
@@ -23,5 +24,8 @@ router.get('/feed', authenticate, getFeed);
 
 // Récupérer tous les posts d’un profil 
 router.get('/user/:userId', authenticate, getUserPosts);
+// Récupérer les posts likés
+router.get('/liked', authenticate, getLikedPosts);
+
 
 module.exports = router;
