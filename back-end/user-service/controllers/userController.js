@@ -1,4 +1,4 @@
-const User   = require('../models/User');
+const User = require('../models/User');
 const Follow = require('../models/Follow');
 
 /**
@@ -9,19 +9,17 @@ const getUserProfile = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    // 1) Récupérer l’utilisateur (sans le password)
     const user = await User.findById(userId)
       .select('-password')
       .lean();
+
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
 
-    // 2) Compter abonnés & abonnements
     const followersCount = await Follow.countDocuments({ following: userId });
     const followingCount = await Follow.countDocuments({ follower: userId });
 
-    // 3) Retourner le profil et les statistiques
     res.json({
       user,
       stats: {
@@ -35,20 +33,32 @@ const getUserProfile = async (req, res, next) => {
 };
 
 /**
+ * GET /api/users
+ * Récupère tous les utilisateurs (username + avatarUrl uniquement)
+ */
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}, 'username avatarUrl').lean();
+    res.json({ users });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * PATCH /api/users/:userId
  * Met à jour la bio et/ou l’avatar de l’utilisateur connecté
  */
 const updateProfile = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    // On n’autorise que l’utilisateur lui-même
     if (!req.user._id.equals(userId)) {
       return res.status(403).json({ message: 'Accès non autorisé.' });
     }
 
     const { bio, avatarUrl } = req.body;
     const updates = {};
-    if (bio !== undefined)       updates.bio = bio;
+    if (bio !== undefined) updates.bio = bio;
     if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
 
     const user = await User.findByIdAndUpdate(
@@ -64,7 +74,7 @@ const updateProfile = async (req, res, next) => {
 
 /**
  * DELETE /api/users/:userId
- * Supprime le compte et toutes les relations de suivi (mais PAS les posts)
+ * Supprime le compte et toutes les relations de suivi
  */
 const deleteAccount = async (req, res, next) => {
   try {
@@ -73,10 +83,7 @@ const deleteAccount = async (req, res, next) => {
       return res.status(403).json({ message: 'Accès non autorisé.' });
     }
 
-    // 1) Supprimer l’utilisateur
     await User.findByIdAndDelete(userId);
-
-    // 2) Supprimer ses relations follow
     await Promise.all([
       Follow.deleteMany({ follower: userId }),
       Follow.deleteMany({ following: userId })
@@ -90,6 +97,7 @@ const deleteAccount = async (req, res, next) => {
 
 module.exports = {
   getUserProfile,
+  getAllUsers,
   updateProfile,
   deleteAccount
 };

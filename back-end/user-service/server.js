@@ -31,7 +31,7 @@ app.use(express.json());                        // Parser le JSON
 
 // 5. Routes de l’API
 app.use('/api/auth', authRoutes);
-app.use('/api/users', followRoutes);
+app.use('/api/follows', followRoutes);
 app.use('/api/users', userRoutes);
 
 // 7. Gestionnaire d’erreurs global

@@ -1,21 +1,25 @@
-// src/routes/userRoutes.js
-const express      = require('express');
+const express = require('express');
 const { body, param } = require('express-validator');
 const authenticate = require('../middleware/authJwt');
-const validate     = require('../middleware/validate');
+const validate = require('../middleware/validate');
+
 const {
   getUserProfile,
+  getAllUsers,
   updateProfile,
   deleteAccount
 } = require('../controllers/userController');
 
 const router = express.Router();
 
-// Récupérer le profil + stats + posts
+// Liste de tous les utilisateurs (username + avatarUrl)
+router.get('/', authenticate, getAllUsers);
+
+// Récupérer le profil + stats + posts d’un utilisateur
 router.get(
   '/:userId',
   authenticate,
-  [ param('userId').isMongoId().withMessage('userId invalide.') ],
+  [param('userId').isMongoId().withMessage('userId invalide.')],
   validate,
   getUserProfile
 );
@@ -25,7 +29,7 @@ router.patch(
   '/:userId',
   authenticate,
   [
-    param('userId').isMongoId(),
+    param('userId').isMongoId().withMessage('userId invalide.'),
     body('bio').optional().isString().isLength({ max: 160 }),
     body('avatarUrl').optional().isURL().withMessage('URL invalide')
   ],
@@ -37,7 +41,7 @@ router.patch(
 router.delete(
   '/:userId',
   authenticate,
-  [ param('userId').isMongoId().withMessage('userId invalide.') ],
+  [param('userId').isMongoId().withMessage('userId invalide.')],
   validate,
   deleteAccount
 );

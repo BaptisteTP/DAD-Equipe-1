@@ -10,8 +10,11 @@ import UserList from '@/components/userList';
 
 export default function App() {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
   const navbarRef = useRef(null);
 
+  // Fermer le menu si on clique en dehors
   useEffect(() => {
     function handleClickOutside(event) {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -27,6 +30,43 @@ export default function App() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isNavbarOpen]);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const token = localStorage.getItem('token'); 
+
+        if (!token) {
+          throw new Error('Token manquant. Veuillez vous connecter.');
+        }
+
+        const res = await fetch('http://localhost:4002/api/posts/feed', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const postsArray = Array.isArray(data) ? data : data.posts;
+
+        if (!Array.isArray(postsArray)) {
+          throw new Error("Les données reçues ne sont pas un tableau.");
+        }
+
+        setPosts(postsArray);
+      } catch (err) {
+        console.error('Erreur lors de la récupération des posts:', err);
+        setError(err.message);
+      }
+    }
+
+    fetchPosts();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-900">
@@ -49,24 +89,23 @@ export default function App() {
         </div>
 
         <main className="flex-1 container mx-auto px-4 py-6 space-y-6">
-          <Post
-            title="Premier post"
-            image={User}
-            username="Baptiste"
-            content="Voici le contenu de mon premier post !"
-            like={5}
-            comment={2}
-            share={1}
-          />
-          <Post
-            title="Deuxième post"
-            image={User}
-            username="Claire"
-            content="Un autre post avec plus de contenu pour tester l'affichage responsive."
-            like={10}
-            comment={5}
-            share={2}
-          />
+          {error ? (
+            <p className="text-red-500">{error}</p>
+          ) : posts.length === 0 ? (
+            <p>Chargement des posts...</p>
+          ) : (
+            posts.map((post) => (
+              <Post
+                key={post._id}
+                image={post.authorAvatarUrl}
+                username={post.authorUsername}
+                content={post.content}
+                like={post.like}
+                comment={post.comment}
+                share={post.share}
+              />
+            ))
+          )}
         </main>
 
         <UserList />
