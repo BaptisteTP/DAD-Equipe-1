@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { jwtDecode } from 'jwt-decode'  // Import nommé obligatoire avec la version ESM
+import  {jwtDecode} from 'jwt-decode'  // Import nommé obligatoire avec la version ESM
 import defaultAvatar from '@/assets/default-image.jpg'
 import Header from '@/components/header'
 import Footer from '@/components/footer'

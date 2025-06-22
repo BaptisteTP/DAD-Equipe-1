@@ -62,8 +62,9 @@ const getFeed = async (req, res, next) => {
 
     // 1) Appel au user‐service pour avoir la liste des suivis
     const { data: followingUsers } = await axios.get(
-      `${USER_SERVICE_URL}/api/users/${currentUserId}/following`,
-      { headers: { Authorization: token } }
+        // <— ici on passe /api/follows et non /api/users
+        `${USER_SERVICE_URL}/api/follows/${currentUserId}/following`,
+        { headers: { Authorization: token } }
     );
     const followingIds = followingUsers.map(u => u._id);
 
@@ -72,13 +73,14 @@ const getFeed = async (req, res, next) => {
 
     // 2) Récupérer les posts de ces auteurs
     const feed = await Post.find({ authorId: { $in: followingIds } })
-      .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 });
 
     res.json(feed);
   } catch (err) {
     next(err);
   }
 };
+
 
 /**
  * Récupère tous les posts likés par l'utilisateur connecté.

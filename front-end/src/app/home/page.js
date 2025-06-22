@@ -1,119 +1,128 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import User from '@/assets/default_user.svg';
+import React, { useEffect, useState, useRef } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import Post from '@/components/post';
 import Navbar from '@/components/navbar';
 import UserList from '@/components/userList';
+import Post from '@/components/post';
 
-export default function App() {
+export default function HomePage() {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const [posts, setPosts] = useState([]);
-  const [error, setError] = useState(null);
+  const [likedIds, setLikedIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const navbarRef = useRef(null);
 
-  // Fermer le menu si on clique en dehors
+  // 1) Récupérer le feed
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+    async function fetchFeed() {
+      setLoading(true);
+      setError('');
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Vous devez être connecté pour voir le fil.');
+
+        // Vérifier le token
+        jwtDecode(token);
+
+        const res = await fetch('http://localhost:4002/api/posts/feed', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Données serveur invalides.');
+        setPosts(data);
+        // IDs pré-likés
+        setLikedIds(data.filter(p => p.isLiked).map(p => p._id));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFeed();
+  }, []);
+
+  // 2) Toggle like/unlike
+  const handleToggleLike = async (postId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Non connecté.');
+      const isLiked = likedIds.includes(postId);
+
+      const res = await fetch(`http://localhost:4002/api/posts/${postId}/like`, {
+        method: isLiked ? 'DELETE' : 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || 'Erreur like.');
+
+      // Met à jour l’état
+      setLikedIds(ids =>
+          isLiked ? ids.filter(id => id !== postId) : [...ids, postId]
+      );
+      setPosts(ps =>
+          ps.map(p =>
+              p._id === postId
+                  ? { ...p, likesCount: p.likesCount + (isLiked ? -1 : 1) }
+                  : p
+          )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // 3) Fermer menu mobile
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (navbarRef.current && !navbarRef.current.contains(e.target)) {
         setIsNavbarOpen(false);
       }
     }
-
-    if (isNavbarOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isNavbarOpen) document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
   }, [isNavbarOpen]);
 
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const token = localStorage.getItem('token'); 
-
-        if (!token) {
-          throw new Error('Token manquant. Veuillez vous connecter.');
-        }
-
-        const res = await fetch('http://localhost:4002/api/posts/feed', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        const postsArray = Array.isArray(data) ? data : data.posts;
-
-        if (!Array.isArray(postsArray)) {
-          throw new Error("Les données reçues ne sont pas un tableau.");
-        }
-
-        setPosts(postsArray);
-      } catch (err) {
-        console.error('Erreur lors de la récupération des posts:', err);
-        setError(err.message);
-      }
-    }
-
-    fetchPosts();
-  }, []);
-
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-900">
-      <div className="block lg:hidden">
-        <Header onProfileClick={() => setIsNavbarOpen(!isNavbarOpen)} />
-      </div>
-
-      <div className="flex flex-1">
-        {isNavbarOpen && (
-          <div
-            ref={navbarRef}
-            className="fixed z-40 inset-y-0 left-0 w-64 bg-base-100 shadow-lg border-r border-gray-200 lg:hidden"
-          >
-            <Navbar />
-          </div>
-        )}
-
-        <div className="hidden lg:block">
-          <Navbar />
+      <div className="flex flex-col min-h-screen bg-white text-gray-900">
+        <div className="block lg:hidden">
+          <Header onProfileClick={() => setIsNavbarOpen(o => !o)} />
         </div>
-
-        <main className="flex-1 container mx-auto px-4 py-6 space-y-6">
-          {error ? (
-            <p className="text-red-500">{error}</p>
-          ) : posts.length === 0 ? (
-            <p>Chargement des posts...</p>
-          ) : (
-            posts.map((post) => (
-              <Post
-                key={post._id}
-                image={post.authorAvatarUrl}
-                username={post.authorUsername}
-                content={post.content}
-                like={post.like}
-                comment={post.comment}
-                share={post.share}
-              />
-            ))
+        <div className="flex flex-1">
+          {isNavbarOpen && (
+              <div ref={navbarRef}
+                   className="fixed inset-y-0 left-0 z-40 w-64 bg-base-100 shadow-lg lg:hidden">
+                <Navbar />
+              </div>
           )}
-        </main>
+          <div className="hidden lg:block"><Navbar /></div>
 
-        <UserList />
-      </div>
+          <main className="flex-1 container mx-auto px-4 py-6 space-y-6">
+            {loading && <p>Chargement des posts…</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && posts.length === 0 && <p>Aucun post.</p>}
+            {!loading && !error && posts.map(post => (
+                <Post
+                    key={post._id}
+                    image={post.authorAvatarUrl}
+                    username={post.authorUsername}
+                    content={post.content}
+                    like={post.likesCount}
+                    comment={post.commentsCount ?? 0}
+                    share={0}
+                    liked={likedIds.includes(post._id)}
+                    onToggleLike={() => handleToggleLike(post._id)}
+                />
+            ))}
+          </main>
 
-      <div className="block lg:hidden">
-        <Footer />
+          <UserList />
+        </div>
+        <div className="block lg:hidden"><Footer /></div>
       </div>
-    </div>
   );
 }
