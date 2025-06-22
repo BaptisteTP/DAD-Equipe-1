@@ -9,7 +9,7 @@ import { jwtDecode } from 'jwt-decode'
 export default function OtherProfilePage() {
     const router = useRouter()
     const { userId } = useParams()
-
+    const [ready, setReady] = useState(false);
     const [user, setUser] = useState(null)
     const [posts, setPosts] = useState([])
     const [likedPosts, setLikedPosts] = useState([])
@@ -19,6 +19,28 @@ export default function OtherProfilePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
+    useEffect(() => {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        let decoded
+        try {
+            decoded = jwtDecode(token)
+        } catch {
+            return
+        }
+
+        const currentUserId =
+            decoded.userId ||
+            decoded.id ||
+            decoded._id ||
+            decoded.sub ||
+            (decoded.user && decoded.user._id)
+
+        if (currentUserId === userId) {
+            router.replace('/profile/me')
+        }
+    }, [router, userId])
     useEffect(() => {
         async function fetchProfile() {
             setLoading(true)

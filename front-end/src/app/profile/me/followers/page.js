@@ -51,7 +51,9 @@ export default function FollowersPage() {
         }
         fetchFollowers();
     }, []);
-
+    const avatarSrc = user.avatarUrl && user.avatarUrl !== ""
+        ? user.avatarUrl
+        : "/default-avatar.png";
     return (
         <div className="min-h-screen p-4 bg-white">
             {/* En-tête avec switch d’onglets */}
@@ -98,7 +100,7 @@ export default function FollowersPage() {
                     {users.map((user) => (
                         <li key={user._id} className="flex items-center space-x-3">
                             <Image
-                                src={user.avatarUrl || defaultAvatar.src}
+                                src={avatarSrc}
                                 alt={user.username}
                                 width={48}
                                 height={48}
