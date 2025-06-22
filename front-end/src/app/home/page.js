@@ -16,53 +16,69 @@ export default function HomePage() {
   const [error, setError] = useState('');
   const navbarRef = useRef(null);
 
-  // 1) Récupérer le feed
   useEffect(() => {
-    async function fetchFeed() {
+    async function fetchData() {
       setLoading(true);
       setError('');
       try {
         const token = localStorage.getItem('token');
-        if (!token) throw new Error('Vous devez être connecté pour voir le fil.');
+        if (!token) throw new Error('Connecte-toi pour accéder au fil.');
 
-        // Vérifier le token
+        // valide grossièrement le token
         jwtDecode(token);
 
-        const res = await fetch('http://localhost:4002/api/posts/feed', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error('Données serveur invalides.');
-        setPosts(data);
-        // IDs pré-likés
-        setLikedIds(data.filter(p => p.isLiked).map(p => p._id));
+        // on récupère feed et liked en parallèle
+        const [feedRes, likedRes] = await Promise.all([
+          fetch('http://localhost:4002/api/posts/feed', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:4002/api/posts/liked', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        if (!feedRes.ok)  throw new Error(`Feed erreur ${feedRes.status}`);
+        if (!likedRes.ok) throw new Error(`Liked erreur ${likedRes.status}`);
+
+        const feedData  = await feedRes.json();
+        const likedData = await likedRes.json();
+
+        if (!Array.isArray(feedData))  throw new Error('Feed invalide');
+        if (!Array.isArray(likedData)) throw new Error('Likés invalide');
+
+        setPosts(feedData);
+        // on extrait les IDs des posts likés
+        setLikedIds(likedData.map(p => p._id));
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchFeed();
+    fetchData();
   }, []);
 
-  // 2) Toggle like/unlike
-  const handleToggleLike = async (postId) => {
+  // toggle like/unlike
+  const handleToggleLike = async postId => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Non connecté.');
-      const isLiked = likedIds.includes(postId);
 
-      const res = await fetch(`http://localhost:4002/api/posts/${postId}/like`, {
-        method: isLiked ? 'DELETE' : 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const isLiked = likedIds.includes(postId);
+      const res = await fetch(
+          `http://localhost:4002/api/posts/${postId}/like`,
+          {
+            method: isLiked ? 'DELETE' : 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+      );
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Erreur like.');
 
-      // Met à jour l’état
       setLikedIds(ids =>
-          isLiked ? ids.filter(id => id !== postId) : [...ids, postId]
+          isLiked
+              ? ids.filter(id => id !== postId)
+              : [...ids, postId]
       );
       setPosts(ps =>
           ps.map(p =>
@@ -76,15 +92,15 @@ export default function HomePage() {
     }
   };
 
-  // 3) Fermer menu mobile
+  // fermer navbar mobile quand on clique en dehors
   useEffect(() => {
-    function onClickOutside(e) {
+    function onOutside(e) {
       if (navbarRef.current && !navbarRef.current.contains(e.target)) {
         setIsNavbarOpen(false);
       }
     }
-    if (isNavbarOpen) document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    if (isNavbarOpen) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
   }, [isNavbarOpen]);
 
   return (
@@ -94,8 +110,10 @@ export default function HomePage() {
         </div>
         <div className="flex flex-1">
           {isNavbarOpen && (
-              <div ref={navbarRef}
-                   className="fixed inset-y-0 left-0 z-40 w-64 bg-base-100 shadow-lg lg:hidden">
+              <div
+                  ref={navbarRef}
+                  className="fixed inset-y-0 left-0 z-40 w-64 bg-base-100 shadow-lg lg:hidden"
+              >
                 <Navbar />
               </div>
           )}
@@ -103,8 +121,10 @@ export default function HomePage() {
 
           <main className="flex-1 container mx-auto px-4 py-6 space-y-6">
             {loading && <p>Chargement des posts…</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            {!loading && !error && posts.length === 0 && <p>Aucun post.</p>}
+            {error   && <p className="text-red-500">{error}</p>}
+            {!loading && !error && posts.length === 0 && (
+                <p>Aucun post à afficher.</p>
+            )}
             {!loading && !error && posts.map(post => (
                 <Post
                     key={post._id}
@@ -114,7 +134,7 @@ export default function HomePage() {
                     like={post.likesCount}
                     comment={post.commentsCount ?? 0}
                     share={0}
-                    liked={likedIds.includes(post._id)}
+                    liked={likedIds.includes(post._id)}           // cœur rouge si dans likedIds
                     onToggleLike={() => handleToggleLike(post._id)}
                 />
             ))}
