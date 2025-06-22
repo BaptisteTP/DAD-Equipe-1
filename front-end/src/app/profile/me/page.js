@@ -273,6 +273,7 @@ export default function MyProfilePage() {
                 const isLiked = likedIds.includes(post._id)
                 return (
                     <Post
+                        authorId={post.authorId}                   // ← on passe l’id
                         key={post._id}
                         username={post.authorUsername}
                         content={post.content}

@@ -127,6 +127,7 @@ export default function HomePage() {
             )}
             {!loading && !error && posts.map(post => (
                 <Post
+                    authorId={post.authorId}                   // ← on passe l’id
                     key={post._id}
                     image={post.authorAvatarUrl}
                     username={post.authorUsername}

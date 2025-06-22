@@ -1,8 +1,10 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Post = ({
-                username,
+                  authorId,
+                  username,
                 content,
                 image,
                 like,
@@ -15,17 +17,29 @@ const Post = ({
       <div className="max-w-md mx-auto bg-white p-4 mb-2 border-b">
         <div className="flex items-center mb-3">
           <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border">
-            <Image
-                src={image}
-                alt={`${username} profile`}
-                width={40}
-                height={40}
-                className="object-cover w-full h-full"
-            />
+              {/* Avatar cliquable */}
+              <Link
+                  href={`/profile/${authorId}`}
+                  className="block w-10 h-10 rounded-full overflow-hidden mr-3 border"
+              >
+                  <Image
+                      src={image || '/default-avatar.png'}
+                      alt={`${username} profile`}
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full"
+                  />
+              </Link>
           </div>
-          <div>
-            <p className="font-semibold text-black">{username}</p>
-          </div>
+            {/* NOM CLIQUABLE */}
+            <div>
+                <Link
+                    href={`/profile/${authorId}`}
+                    className="font-semibold text-black hover:underline"
+                >
+                    {username}
+                </Link>
+            </div>
         </div>
 
         <p className="mb-3 ml-12 text-black">{content}</p>

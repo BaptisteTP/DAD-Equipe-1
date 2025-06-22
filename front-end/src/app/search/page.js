@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import  {jwtDecode} from 'jwt-decode'  // Import nommé obligatoire avec la version ESM
 import defaultAvatar from '@/assets/default-image.jpg'
 import Header from '@/components/header'
@@ -164,23 +165,28 @@ export default function SearchPage() {
                 key={user._id}
                 className="flex items-center justify-between p-4 border border-gray-200 rounded shadow-sm hover:bg-gray-50"
               >
-                <div className="flex items-center">
-                  <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-300 mr-4">
-                    <Image
-                      src={user.avatarUrl || defaultAvatar}
-                      alt={`Avatar de ${user.username}`}
-                      width={56}
-                      height={56}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{user.username}</p>
-                    <p className="text-sm text-gray-600">
-                      {user.bio || 'Pas de bio'}
-                    </p>
-                  </div>
-                </div>
+                  <Link
+                      href={`/profile/${user._id}`}
+                      className="flex items-center group"
+                  >
+                      <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-300 mr-4">
+                          <Image
+                              src={user.avatarUrl || defaultAvatar}
+                              alt={`Avatar de ${user.username}`}
+                              width={56}
+                              height={56}
+                              className="object-cover w-full h-full"
+                          />
+                      </div>
+                      <div>
+                          <p className="font-semibold text-black group-hover:underline">
+                              {user.username}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                              {user.bio || 'Pas de bio'}
+                          </p>
+                      </div>
+                  </Link>
 
                 {user._id !== currentUserId && (
                   <button

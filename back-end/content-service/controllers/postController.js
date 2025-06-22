@@ -99,9 +99,30 @@ const getLikedPosts = async (req, res, next) => {
   }
 };
 
+/**
+ * Récupère les posts likés par un user donné.
+ * GET /api/posts/user/:userId/liked
+ */
+const getUserLikedPosts = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    // 1) trouver tous les likes de cet utilisateur
+    const likes = await Like.find({ user: userId }).select('post');
+    const postIds = likes.map(l => l.post);
+    // 2) récupérer les posts correspondants
+    const likedPosts = await Post.find({ _id: { $in: postIds } })
+        .sort({ createdAt: -1 });
+    res.json(likedPosts);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createPost,
   getUserPosts,
   getFeed,
   getLikedPosts,
+  getUserLikedPosts,
+
 };

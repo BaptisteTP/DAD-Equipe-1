@@ -2,7 +2,6 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 
 const express       = require('express');
-const cors          = require('cors');
 const helmet        = require('helmet');
 const rateLimit     = require('express-rate-limit');
 
@@ -12,6 +11,28 @@ const likeRoutes    = require('./routes/likeRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 
 const app = express();
+// server.js (user-service)
+
+// 1) Import du package CORS
+const cors = require('cors');
+
+// 2) Configuration CORS
+const corsOptions = {
+  origin: 'http://localhost:3000',               // ton front en dev
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,                             // si tu veux gérer les cookies/sessions
+  optionsSuccessStatus: 204
+};
+
+// 3) Middleware pour toutes les requêtes
+app.use(cors(corsOptions));
+
+// 4) Répondre aux pré-vols OPTIONS (required pour POST/PUT avec headers custom)
+app.options('*', cors(corsOptions));
+
+// —> puis tu peux mettre express.json(), helmet(), rateLimit(), etc.
+app.use(express.json());
 
 // 2. Connexion à MongoDB
 connectDB();
