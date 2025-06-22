@@ -57,7 +57,7 @@ export default function FollowersPage() {
             {/* En-tête avec switch d’onglets */}
             <div className="flex items-center mb-6">
                 <button
-                    onClick={() => router.back()}
+                    onClick={() => router.push('/profile/me')}
                     className="mr-4 text-gray-800 hover:text-gray-900"
                 >
                     ← Retour

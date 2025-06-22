@@ -31,7 +31,6 @@ app.use(cors(corsOptions));
 // 4) Répondre aux pré-vols OPTIONS (required pour POST/PUT avec headers custom)
 app.options('*', cors(corsOptions));
 
-// —> puis tu peux mettre express.json(), helmet(), rateLimit(), etc.
 app.use(express.json());
 
 // 2. Connexion à MongoDB
@@ -41,7 +40,7 @@ connectDB();
 app.use(helmet());                              // Sécuriser les headers HTTP
 app.use(rateLimit({                             // Limiter le nombre de requêtes
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 600,
   message: 'Trop de requêtes depuis cette IP, réessayez dans 15 minutes'
 }));
 
