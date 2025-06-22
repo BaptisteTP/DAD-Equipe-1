@@ -51,8 +51,8 @@ export default function FollowersPage() {
         }
         fetchFollowers();
     }, []);
-    const avatarSrc = user.avatarUrl && user.avatarUrl !== ""
-        ? user.avatarUrl
+    const avatarSrc = users.avatarUrl && users.avatarUrl !== ""
+        ? users.avatarUrl
         : "/default-avatar.png";
     return (
         <div className="min-h-screen p-4 bg-white">
