@@ -16,6 +16,10 @@ export default function MyProfilePage() {
   const [selectedTab, setSelectedTab] = useState('posts') // 'posts' ou 'liked'
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
+  const [followers, setFollowers] = useState([])
+  const [following, setFollowing] = useState([])
+  const [showFollowers, setShowFollowers] = useState(false)
+  const [showFollowing, setShowFollowing] = useState(false)
 
   // Décodage simple du JWT
   function parseJwt(token) {
@@ -74,7 +78,15 @@ export default function MyProfilePage() {
     fetchAll()
   }, [])
 
-  // 2) Toggle like/unlike
+  // → ICI : ajoutez ces deux fonctions
+  const handleShowFollowing = () => {
+    router.push('/profile/me/following')
+  }
+
+  const handleShowFollowers = () => {
+    router.push('/profile/me/followers')
+  }
+
 // 2) Toggle like/unlike
   const handleToggleLike = async (postId, isCurrentlyLiked) => {
     try {
@@ -178,15 +190,51 @@ export default function MyProfilePage() {
         </div>
         {user.stats && (
             <div className="flex space-x-6 text-sm text-gray-600 mb-4">
-    <span>
+    <span
+        onClick={handleShowFollowing}
+        className="cursor-pointer hover:underline"
+    >
       <strong>{user.stats.followingCount}</strong> Abonnements
     </span>
-              <span>
+              <span
+                  onClick={handleShowFollowers}
+                  className="cursor-pointer hover:underline"
+              >
       <strong>{user.stats.followersCount}</strong> Abonnés
     </span>
             </div>
         )}
 
+
+        {/* Affichage des listes */}
+        {showFollowing && (
+            <ul className="space-y-2 mb-6">
+              {following.map(u => (
+                  <li key={u._id} className="flex items-center space-x-2">
+                    <img
+                        src={u.avatarUrl || defaultAvatar.src}
+                        alt={u.username}
+                        className="w-8 h-8 rounded-full"
+                    />
+                    <span>{u.username}</span>
+                  </li>
+              ))}
+            </ul>
+        )}
+        {showFollowers && (
+            <ul className="space-y-2 mb-6">
+              {followers.map(u => (
+                  <li key={u._id} className="flex items-center space-x-2">
+                    <img
+                        src={u.avatarUrl || defaultAvatar.src}
+                        alt={u.username}
+                        className="w-8 h-8 rounded-full"
+                    />
+                    <span>{u.username}</span>
+                  </li>
+              ))}
+            </ul>
+        )}
 
         {/* Onglets */}
         <div className="border-b mb-4 flex space-x-6">
@@ -225,6 +273,7 @@ export default function MyProfilePage() {
                 const isLiked = likedIds.includes(post._id)
                 return (
                     <Post
+                        authorId={post.authorId}                   // ← on passe l’id
                         key={post._id}
                         username={post.authorUsername}
                         content={post.content}
