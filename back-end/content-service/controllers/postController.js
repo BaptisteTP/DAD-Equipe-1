@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Post  = require('../models/Post');
+const Like = require('../models/Like');
 
 // URL de base du user‐service (nom du service Docker ou URL en prod)
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:4001';
@@ -61,8 +62,9 @@ const getFeed = async (req, res, next) => {
 
     // 1) Appel au user‐service pour avoir la liste des suivis
     const { data: followingUsers } = await axios.get(
-      `${USER_SERVICE_URL}/api/users/${currentUserId}/following`,
-      { headers: { Authorization: token } }
+        // <— ici on passe /api/follows et non /api/users
+        `${USER_SERVICE_URL}/api/follows/${currentUserId}/following`,
+        { headers: { Authorization: token } }
     );
     const followingIds = followingUsers.map(u => u._id);
 
@@ -71,9 +73,27 @@ const getFeed = async (req, res, next) => {
 
     // 2) Récupérer les posts de ces auteurs
     const feed = await Post.find({ authorId: { $in: followingIds } })
-      .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 });
 
     res.json(feed);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+/**
+ * Récupère tous les posts likés par l'utilisateur connecté.
+ */
+const getLikedPosts = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    // 1) Trouver les likes de l'utilisateur
+    const likes = await Like.find({ user: userId }).select('post');
+    const postIds = likes.map(l => l.post);
+    // 2) Charger les posts correspondants
+    const likedPosts = await Post.find({ _id: { $in: postIds } }).sort({ createdAt: -1 });
+    res.json(likedPosts);
   } catch (err) {
     next(err);
   }
@@ -83,4 +103,5 @@ module.exports = {
   createPost,
   getUserPosts,
   getFeed,
+  getLikedPosts,
 };

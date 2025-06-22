@@ -1,31 +1,74 @@
-import React from 'react';
+'use client';
 
-const users = ['Alice', 'Bob', 'Charlie', 'Diane'];
+import React, { useEffect, useState } from 'react';
+import {jwtDecode} from 'jwt-decode';
 
+/**
+ * Affiche la liste des utilisateurs suivis (sidebar).
+ */
 export default function UserList() {
-  return (
-    <aside className="hidden lg:flex flex-col w-64 p-4 bg-gray-100 border-l border-gray-300">
-      <h2 className="text-lg font-semibold mb-4">Utilisateurs</h2>
-      <ul className="space-y-3">
-        {users.map((user) => (
-          <li key={user} className="flex items-center space-x-3 text-gray-800">
-            <UserIcon className="w-6 h-6 text-gray-600" />
-            <span>{user}</span>
-          </li>
-        ))}
-      </ul>
-    </aside>
-  );
-}
+  const [following, setFollowing] = useState([]);
+  const [error, setError] = useState('');
 
-function UserIcon(props) {
+  useEffect(() => {
+    async function fetchFollowing() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Vous devez être connecté.');
+          return;
+        }
+
+        // Vérification simple du token
+        try {
+          jwtDecode(token);
+        } catch {
+          localStorage.removeItem('token');
+          setError('Token invalide, reconnectez-vous.');
+          return;
+        }
+
+        const { userId } = jwtDecode(token);
+        if (!userId) {
+          setError('ID utilisateur introuvable dans le token.');
+          return;
+        }
+
+        const res = await fetch(`http://localhost:4001/api/follows/${userId}/following`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        setFollowing(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+
+    fetchFollowing();
+  }, []);
+
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-         viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round"
-            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501
-               20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12
-               21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-    </svg>
+      <aside className="hidden lg:block w-64 p-4 bg-gray-50 border-l border-gray-200">
+        <h2 className="text-lg font-semibold mb-4">Abonnements</h2>
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        {!error && following.length === 0 && (
+            <p className="text-gray-500 text-sm">Aucun abonnement</p>
+        )}
+        <ul className="space-y-3">
+          {following.map(user => (
+              <li key={user._id} className="flex items-center space-x-3">
+                <img
+                    src={user.avatarUrl || '/default-avatar.png'}
+                    alt={`Avatar de ${user.username}`}
+                    className="w-8 h-8 rounded-full object-cover"
+                />
+                <span className="font-medium">{user.username}</span>
+              </li>
+          ))}
+        </ul>
+      </aside>
   );
 }

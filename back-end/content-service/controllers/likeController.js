@@ -3,7 +3,7 @@ const Post = require('../models/Post');
 
 const likePost = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.userId;
     const { postId } = req.params;
 
     // 1) Créer un like (l'index unique dans Like empêche les doublons)
@@ -24,7 +24,7 @@ const likePost = async (req, res, next) => {
 
 const unlikePost = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.userId;
     const { postId } = req.params;
 
     // 1) Supprimer le document Like
