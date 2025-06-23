@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import {jwtDecode} from "jwt-decode";
 import { useThemeLang } from '@/context/ThemeLangContext';
 
-export default function Header({ onProfileClick }) {
+export default function Header({ onBurgerClick  }) {
   const [user, setUser] = useState(null);
   const { themeClasses } = useThemeLang();
 
@@ -48,24 +48,21 @@ export default function Header({ onProfileClick }) {
 
   return (
     <header className="relative border-b rounded-b-md py-2 px-6 flex items-center w-full h-16">
-      <div
-        className={`flex flex-col min-h-screen transition-colors duration-300 ${themeClasses}`}
-        onClick={onProfileClick}
+
+      {/* Burger à gauche */}
+      <button
+          onClick={onBurgerClick}
+          aria-label="Ouvrir le menu"
+          className="p-2 mr-4"
       >
-        {user?.avatarUrl ? (
-          <Image
-            src={user.avatarUrl}
-            alt="Icône de profil"
-            className="h-full w-full object-cover rounded-full"
-            width={60}
-            height={60}
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-            ?
-          </div>
-        )}
-      </div>
+        {/* Icône burger */}
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor"
+             className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
       <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
         <Image
