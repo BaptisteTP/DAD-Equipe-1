@@ -1,4 +1,4 @@
-import breezyLogo from "@/assets/breezy.svg";
+import breezyLogo from "@/assets/breezy.png";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import {jwtDecode} from "jwt-decode";
@@ -57,8 +57,8 @@ export default function Header({ onProfileClick }) {
             src={user.avatarUrl}
             alt="Icône de profil"
             className="h-full w-full object-cover rounded-full"
-            width={40}
-            height={40}
+            width={60}
+            height={60}
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">

@@ -10,7 +10,6 @@ import Post from '@/components/post';
 import { useThemeLang } from '@/context/ThemeLangContext';
 import Link from 'next/link';
 import plume from '@/assets/Plume.svg';
-import { PlusIcon } from '@heroicons/react/24/solid';
 
 export default function HomePage() {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
@@ -33,11 +32,11 @@ export default function HomePage() {
 
         const [feedRes, likedRes] = await Promise.all([
           fetch('http://localhost:4002/api/posts/feed', {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }),
           fetch('http://localhost:4002/api/posts/liked', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
         if (!feedRes.ok) throw new Error(`Feed erreur ${feedRes.status}`);
@@ -50,7 +49,7 @@ export default function HomePage() {
         if (!Array.isArray(likedData)) throw new Error('Likés invalide');
 
         setPosts(feedData);
-        setLikedIds(likedData.map(p => p._id));
+        setLikedIds(likedData.map((p) => p._id));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -61,7 +60,7 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  const handleToggleLike = async postId => {
+  const handleToggleLike = async (postId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Non connecté.');
@@ -77,13 +76,11 @@ export default function HomePage() {
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Erreur like.');
 
-      setLikedIds(ids =>
-        isLiked
-          ? ids.filter(id => id !== postId)
-          : [...ids, postId]
+      setLikedIds((ids) =>
+        isLiked ? ids.filter((id) => id !== postId) : [...ids, postId]
       );
-      setPosts(ps =>
-        ps.map(p =>
+      setPosts((ps) =>
+        ps.map((p) =>
           p._id === postId
             ? { ...p, likesCount: p.likesCount + (isLiked ? -1 : 1) }
             : p
@@ -95,13 +92,15 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    function onOutside(e) {
+    function handleOutsideClick(e) {
       if (navbarRef.current && !navbarRef.current.contains(e.target)) {
         setIsNavbarOpen(false);
       }
     }
-    if (isNavbarOpen) document.addEventListener('mousedown', onOutside);
-    return () => document.removeEventListener('mousedown', onOutside);
+    if (isNavbarOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [isNavbarOpen]);
 
   useEffect(() => {
@@ -109,12 +108,12 @@ export default function HomePage() {
     let touchEndX = 0;
 
     function handleTouchStart(e) {
-      if (window.innerWidth > 768) return;
+      if (window.innerWidth > 1024) return;
       touchStartX = e.changedTouches[0].clientX;
     }
 
     function handleTouchEnd(e) {
-      if (window.innerWidth > 768) return;
+      if (window.innerWidth > 1024) return;
       touchEndX = e.changedTouches[0].clientX;
 
       const distance = touchEndX - touchStartX;
@@ -132,13 +131,12 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div
-      className={`flex flex-col min-h-screen transition-colors duration-300 ${themeClasses}`}>
+    <div className={`min-h-screen flex flex-col ${themeClasses}`}>
       <div className="block lg:hidden">
-        <Header onProfileClick={() => setIsNavbarOpen(o => !o)} />
+        <Header onProfileClick={() => setIsNavbarOpen((o) => !o)} />
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
         <div
           ref={navbarRef}
           className={`fixed inset-y-0 left-0 z-40 w-64 bg-base-100 shadow-lg transform transition-transform duration-300 ease-in-out lg:hidden ${
@@ -147,22 +145,21 @@ export default function HomePage() {
         >
           <Navbar />
         </div>
-
-        <div className="hidden lg:block">
+        <div className="hidden lg:block w-64 shrink-0 border-r border-gray-300">
           <Navbar />
         </div>
-
-        <main className="flex-1 container mx-auto px-4 py-6 space-y-6">
+        <main className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
           {loading && <p>Chargement des posts…</p>}
           {error && <p className="text-red-500">{error}</p>}
           {!loading && !error && posts.length === 0 && (
             <p>Aucun post à afficher.</p>
           )}
-          {!loading && !error &&
-            posts.map(post => (
+          {!loading &&
+            !error &&
+            posts.map((post) => (
               <Post
-                authorId={post.authorId}
                 key={post._id}
+                authorId={post.authorId}
                 image={post.authorAvatarUrl}
                 username={post.authorUsername}
                 content={post.content}
@@ -174,25 +171,19 @@ export default function HomePage() {
               />
             ))}
         </main>
-
-        <UserList />
+        <aside className="hidden lg:block w-64 shrink-0 border-l border-gray-300">
+          <UserList />
+        </aside>
       </div>
-
       <div className="block lg:hidden">
         <Footer />
       </div>
-
-      {/* 🔵 Bouton flottant rond */}
       <Link
         href="/createPost"
-        className="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 text-white p-4 shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed bottom-20 right-6 z-50 rounded-full bg-blue-600 text-white p-4 shadow-lg hover:bg-blue-700 transition-colors"
         aria-label="Créer un post"
       >
-        <img
-          className="h-6 w-6 invert"
-          src={plume.src}
-          alt="Créer un post"
-        />
+        <img className="h-6 w-6 invert" src={plume.src} alt="Créer un post" />
       </Link>
     </div>
   );

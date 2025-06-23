@@ -22,7 +22,7 @@ export default function ThemeDropdown() {
           <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-500 dark:text-gray-300" />
         </Menu.Button>
       </div>
-      <Menu.Items className="absolute left-0 mt-2 w-40 origin-top-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 rounded-md shadow-lg focus:outline-none z-50">
+      <Menu.Items className="absolute left-0 mt-2 w-40 origin-top-left dark:bg-gray-800 border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 rounded-md shadow-lg focus:outline-none z-50">
         <div className="px-1 py-1">
           {['light', 'dark', 'dark-orange', 'dark-blue', 'light-orange'].map((option) => (
             <Menu.Item key={option}>

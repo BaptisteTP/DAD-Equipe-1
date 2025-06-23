@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Post from '@/components/post'
 import Navbar from '@/components/navbar'
 import defaultAvatar from '@/assets/default-image.jpg'
-import { jwtDecode } from 'jwt-decode'
+import {jwtDecode} from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function MyProfilePage() {
   const router = useRouter()
@@ -86,20 +87,37 @@ export default function MyProfilePage() {
     }
   }
 
-  const displayList = selectedTab === 'posts' ? posts : likedPosts
-
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>
 
-  return (
-    <div className={`min-h-screen flex ${themeClasses}`}>
-      {/* Navbar visible uniquement sur desktop */}
-      <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
-        <Navbar />
-      </aside>
+  const tabs = {
+    posts,
+    liked: likedPosts,
+  }
 
-      {/* Contenu principal */}
-      <main className="flex-1 p-4 overflow-auto">
+  return (
+    <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
+        <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
+          <Navbar />
+        </aside>
+
+        <main className="flex-1 p-4 overflow-auto flex flex-col">
+          <header className="flex justify-between items-center mb-4">
+            <button
+          onClick={() => router.back()}
+          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+          Retour
+            </button>
+            <button
+          onClick={() => router.push('/profile/edit')}
+          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+          Modifier
+            </button>
+          </header>
+
+          {/* Profil utilisateur */}
         <div className="flex items-center space-x-4 mb-4">
           <div className="w-20 h-20 rounded-full overflow-hidden border">
             <img
@@ -125,54 +143,62 @@ export default function MyProfilePage() {
           </div>
         )}
 
+        {/* Onglets */}
         <div className="border-b mb-4 flex space-x-6">
-          <button
-            onClick={() => setSelectedTab('posts')}
-            className={`pb-2 ${
-              selectedTab === 'posts'
-                ? 'border-b-2 border-black text-black dark:border-white dark:text-white'
-                : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            Posts
-          </button>
-          <button
-            onClick={() => setSelectedTab('liked')}
-            className={`pb-2 ${
-              selectedTab === 'liked'
-                ? 'border-b-2 border-black text-black dark:border-white dark:text-white'
-                : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            Liked
-          </button>
+          {Object.keys(tabs).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setSelectedTab(tab)}
+              className={`pb-2 ${
+                selectedTab === tab
+                  ? 'border-b-2 border-black text-black dark:border-white dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </div>
 
-        {displayList.length === 0 ? (
-          <p className="text-center">
-            {selectedTab === 'posts'
-              ? 'Aucun post publié.'
-              : 'Aucun post liké.'}
-          </p>
-        ) : (
-          displayList.map((post) => {
-            const isLiked = likedIds.includes(post._id)
-            return (
-              <Post
-                key={post._id}
-                authorId={post.authorId}
-                username={post.authorUsername}
-                image={post.authorAvatarUrl || defaultAvatar.src}
-                content={post.content}
-                like={post.likesCount}
-                comment={post.commentsCount ?? 0}
-                share={0}
-                liked={isLiked}
-                onToggleLike={() => handleToggleLike(post._id, isLiked)}
-              />
-            )
-          })
-        )}
+        {/* Liste des posts avec transition */}
+        <div className="relative flex-1 overflow-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedTab}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {tabs[selectedTab].length === 0 ? (
+                <p className="text-center">
+                  {selectedTab === 'posts'
+                    ? 'Aucun post publié.'
+                    : 'Aucun post liké.'}
+                </p>
+              ) : (
+                tabs[selectedTab].map((post) => {
+                  const isLiked = likedIds.includes(post._id)
+                  return (
+                    <Post
+                      key={post._id}
+                      authorId={post.authorId}
+                      username={post.authorUsername}
+                      image={post.authorAvatarUrl || defaultAvatar.src}
+                      content={post.content}
+                      like={post.likesCount}
+                      comment={post.commentsCount ?? 0}
+                      share={0}
+                      liked={isLiked}
+                      onToggleLike={() => handleToggleLike(post._id, isLiked)}
+                    />
+                  )
+                })
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   )

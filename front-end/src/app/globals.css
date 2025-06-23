@@ -190,11 +190,11 @@ button {
 }
 
 button:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--bg-secondary);
 }
 
 button:active {
-  background-color: var(--primary-active);
+  background-color: var(--bg-secondary);
 }
 
 button:disabled {

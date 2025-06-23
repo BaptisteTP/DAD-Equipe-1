@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: 'Mon App',
-  description: 'Thème dark/light avec next-themes',
-};
+// export const metadata = {
+//   title: 'Mon App',
+//   description: 'Thème dark/light avec next-themes',
+// };
 
 export default function RootLayout({ children }) {
   return (

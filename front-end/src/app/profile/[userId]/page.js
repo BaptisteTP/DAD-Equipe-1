@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Post from '@/components/post'
 import Navbar from '@/components/navbar'
 import defaultAvatar from '@/assets/default-image.jpg'
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
 
 export default function OtherProfilePage() {
@@ -19,12 +19,10 @@ export default function OtherProfilePage() {
   const [selectedTab, setSelectedTab] = useState('posts')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { themeClasses } = useThemeLang();
+  const { themeClasses } = useThemeLang()
 
-  // Exemple simple pour gérer le thème (à adapter selon ta gestion globale)
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light'
-    setTheme(savedTheme)
     document.documentElement.classList.toggle('dark', savedTheme === 'dark')
   }, [])
 
@@ -132,12 +130,8 @@ export default function OtherProfilePage() {
     }
   }
 
-  const handleShowFollowing = () => {
-    router.push(`/profile/${userId}/following`)
-  }
-  const handleShowFollowers = () => {
-    router.push(`/profile/${userId}/followers`)
-  }
+  const handleShowFollowing = () => router.push(`/profile/${userId}/following`)
+  const handleShowFollowers = () => router.push(`/profile/${userId}/followers`)
 
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>
@@ -145,19 +139,16 @@ export default function OtherProfilePage() {
   const displayList = selectedTab === 'posts' ? posts : likedPosts
 
   return (
-    <div className={`min-h-screen flex ${themeClasses}`}>
-      {/* Navbar visible uniquement sur grand écran */}
+    <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
       <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
         <Navbar />
       </aside>
 
-      {/* Contenu principal */}
-      <main className="flex-1 p-4 overflow-auto">
-        {/* ← Retour + Follow/Unfollow */}
+      <main className="flex-1 p-4 overflow-auto flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={() => router.push('/home')}
-            className={`hover:underline ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+            className="hover:underline text-gray-800 dark:text-white"
           >
             ← Retour
           </button>
@@ -206,7 +197,7 @@ export default function OtherProfilePage() {
           </div>
         )}
 
-        {/* Onglets Posts / Liked */}
+        {/* Onglets Posts / Liked avec transition */}
         <div className="border-b mb-4 flex space-x-6">
           <button
             onClick={() => setSelectedTab('posts')}
@@ -230,34 +221,40 @@ export default function OtherProfilePage() {
           </button>
         </div>
 
-        {/* Liste des posts */}
-        {displayList.length === 0 ? (
-          <p className="text-center">
-            {selectedTab === 'posts'
-              ? "Cet utilisateur n'a pas publié de post."
-              : "Il n'a pas liké de post."}
-          </p>
-        ) : (
-          displayList.map((post) => {
-            const isLiked = likedIds.includes(post._id)
-            return (
-              <Post
-                key={post._id}
-                authorId={post.authorId || userId}
-                username={post.authorUsername}
-                image={post.authorAvatarUrl || defaultAvatar.src}
-                content={post.content}
-                like={post.likesCount}
-                comment={post.commentsCount ?? 0}
-                share={0}
-                liked={isLiked}
-                onToggleLike={() => {
-                  // Ajouter la logique du like ici si besoin
-                }}
-              />
-            )
-          })
-        )}
+        {/* Liste des posts avec transition */}
+        <div
+          key={selectedTab}
+          className="transition-opacity duration-500 ease-in-out opacity-100"
+          style={{ minHeight: '200px' }}
+        >
+          {displayList.length === 0 ? (
+            <p className="text-center">
+              {selectedTab === 'posts'
+                ? "Cet utilisateur n'a pas publié de post."
+                : "Il n'a pas liké de post."}
+            </p>
+          ) : (
+            displayList.map((post) => {
+              const isLiked = likedIds.includes(post._id)
+              return (
+                <Post
+                  key={post._id}
+                  authorId={post.authorId || userId}
+                  username={post.authorUsername}
+                  image={post.authorAvatarUrl || defaultAvatar.src}
+                  content={post.content}
+                  like={post.likesCount}
+                  comment={post.commentsCount ?? 0}
+                  share={0}
+                  liked={isLiked}
+                  onToggleLike={() => {
+                    // Logique like à ajouter si besoin
+                  }}
+                />
+              )
+            })
+          )}
+        </div>
       </main>
     </div>
   )

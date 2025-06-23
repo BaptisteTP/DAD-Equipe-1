@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import logo from '@/assets/breezy.svg'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useThemeLang } from '@/context/ThemeLangContext'
+import Image from 'next/image';
+import Link from 'next/link';
+import { useThemeLang } from '@/context/ThemeLangContext';
 
 export default function Footer() {
-  const { themeClasses } = useThemeLang()
+  const { themeClasses } = useThemeLang();
+
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t z-50">
-      <nav className={`flex flex-col min-h-screen bg-[var(--bg-color)] text-[color:var(--text-color)] ${themeClasses}`}>
+    <footer className={`fixed bottom-0 left-0 right-0 z-50 border-t dark:bg-gray-900 ${themeClasses}`}>
+      <nav className="flex justify-around items-center h-16 text-gray-700 dark:text-gray-200">
         {/* Home */}
-        <Link href="/home" className="flex flex-col items-center hover:text-blue-600">
+        <Link href="/home" aria-label="Accueil" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
-            className="w-6 h-6 mb-1"
+            className="w-6 h-6"
           >
             <path strokeLinecap="round" strokeLinejoin="round"
               d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12
@@ -26,10 +26,10 @@ export default function Footer() {
         </Link>
 
         {/* Search */}
-        <Link href="/search" className="flex flex-col items-center hover:text-blue-600">
+        <Link href="/search" aria-label="Recherche" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
-            className="w-6 h-6 mb-1"
+            className="w-6 h-6"
           >
             <path strokeLinecap="round" strokeLinejoin="round"
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0
@@ -38,11 +38,15 @@ export default function Footer() {
           </svg>
         </Link>
 
-        {/* Notifications — pas de lien pour l’instant */}
-        <button className="flex flex-col items-center hover:text-blue-600" type="button">
+        {/* Notifications */}
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="flex flex-col items-center hover:text-blue-600"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
-            className="w-6 h-6 mb-1"
+            className="w-6 h-6"
           >
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M14.857 17.082a23.848 23.848 0 0 0
@@ -56,5 +60,5 @@ export default function Footer() {
         </button>
       </nav>
     </footer>
-  )
+  );
 }
