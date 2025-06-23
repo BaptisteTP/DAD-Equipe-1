@@ -1,11 +1,17 @@
-import logo from '@/assets/breezy.svg';
-import Image from 'next/image';
+'use client'
+
+import logo from '@/assets/breezy.svg'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useThemeLang } from '@/context/ThemeLangContext'
 
 export default function Footer() {
+  const { themeClasses } = useThemeLang()
   return (
     <footer className="fixed bottom-0 left-0 right-0 bg-white border-t z-50">
-      <nav className="flex justify-around items-center py-3 text-gray-700">
-        <button className="flex flex-col items-center hover:text-blue-600">
+      <nav className={`flex flex-col min-h-screen bg-[var(--bg-color)] text-[color:var(--text-color)] ${themeClasses}`}>
+        {/* Home */}
+        <Link href="/home" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
             className="w-6 h-6 mb-1"
@@ -17,9 +23,10 @@ export default function Footer() {
               1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
             />
           </svg>
-        </button>
+        </Link>
 
-        <button className="flex flex-col items-center hover:text-blue-600">
+        {/* Search */}
+        <Link href="/search" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
             className="w-6 h-6 mb-1"
@@ -29,9 +36,10 @@ export default function Footer() {
               5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
             />
           </svg>
-        </button>
+        </Link>
 
-        <button className="flex flex-col items-center hover:text-blue-600">
+        {/* Notifications — pas de lien pour l’instant */}
+        <button className="flex flex-col items-center hover:text-blue-600" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
             className="w-6 h-6 mb-1"
@@ -48,5 +56,5 @@ export default function Footer() {
         </button>
       </nav>
     </footer>
-  );
+  )
 }

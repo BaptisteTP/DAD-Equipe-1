@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import defaultAvatar from '@/assets/default-image.jpg'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import Navbar from '@/components/navbar'
+import { useThemeLang } from '@/context/ThemeLangContext'
 
 export default function SearchPage() {
   const [users, setUsers] = useState([])
@@ -18,6 +19,7 @@ export default function SearchPage() {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false)
   const [currentUserId, setCurrentUserId] = useState(null)
   const [followingIds, setFollowingIds] = useState([])
+  const { themeClasses } = useThemeLang()
 
   useEffect(() => {
     const fetchUsersAndFollowing = async () => {
@@ -30,8 +32,6 @@ export default function SearchPage() {
 
       try {
         const decoded = jwtDecode(token)
-        console.log('Token décodé:', decoded)
-
         const userId =
           decoded._id ||
           decoded.id ||
@@ -45,19 +45,14 @@ export default function SearchPage() {
 
         setCurrentUserId(userId)
 
-        // Récupérer les utilisateurs
         const resUsers = await fetch('http://localhost:4001/api/users', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (!resUsers.ok) throw new Error("Erreur lors du chargement des utilisateurs.")
         const usersData = await resUsers.json()
-
-        console.log('Utilisateurs reçus:', usersData.users)
-
         setUsers(usersData.users)
         setFilteredUsers(usersData.users)
 
-        // Récupérer la liste des utilisateurs suivis
         const resFollowing = await fetch(`http://localhost:4001/api/follows/${userId}/following`, {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -119,18 +114,18 @@ export default function SearchPage() {
     }
   }
 
-  if (loading) return <p className="text-center mt-6">Chargement...</p>
+  if (loading) return <p className="text-center mt-6 text-[color:var(--text-color)]">Chargement...</p>
   if (error) return <p className="text-red-500 text-center mt-6">{error}</p>
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-900">
+    <div className={`flex flex-col min-h-screen bg-[var(--bg-color)] text-[color:var(--text-color)] ${themeClasses}`}>
       <div className="block lg:hidden">
         <Header onProfileClick={() => setIsNavbarOpen(!isNavbarOpen)} />
       </div>
 
       <div className="flex flex-1">
         {isNavbarOpen && (
-          <div className="fixed z-40 inset-y-0 left-0 w-64 bg-base-100 shadow-lg border-r border-gray-200 lg:hidden">
+          <div className="fixed z-40 inset-y-0 left-0 w-64 bg-[var(--bg-color)] shadow-lg border-r border-gray-200 lg:hidden">
             <Navbar />
           </div>
         )}
@@ -145,18 +140,18 @@ export default function SearchPage() {
             placeholder="Rechercher un utilisateur..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded mb-6"
+            className="w-full p-2 border border-gray-300 rounded mb-6 bg-white text-black"
           />
 
           <div className="grid gap-4">
             {filteredUsers.length === 0 && (
-              <p className="text-gray-600">Aucun utilisateur trouvé.</p>
+              <p>Aucun utilisateur trouvé.</p>
             )}
 
             {filteredUsers.map(user => (
               <div
                 key={user._id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded shadow-sm hover:bg-gray-50"
+                className="flex items-center justify-between p-4 border rounded shadow-sm hover:bg-[rgba(0,0,0,0.05)] transition"
               >
                 <Link
                   href={`/profile/${user._id}`}
@@ -172,10 +167,10 @@ export default function SearchPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-semibold text-black group-hover:underline">
+                    <p className="font-semibold group-hover:underline text-[color:var(--text-color)]">
                       {user.username}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm opacity-70">
                       {user.bio?.trim() ? user.bio : 'Pas de bio'}
                     </p>
                   </div>
@@ -184,11 +179,13 @@ export default function SearchPage() {
                 {user._id !== currentUserId && (
                   <button
                     onClick={() => handleFollowToggle(user._id)}
-                    className={`px-4 py-2 rounded text-sm font-medium ${
-                      followingIds.includes(user._id)
-                        ? 'bg-red-500 text-white hover:bg-red-600'
-                        : 'bg-blue-500 text-white hover:bg-blue-600'
-                    }`}
+                    className="px-4 py-2 rounded text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: followingIds.includes(user._id)
+                        ? 'red'
+                        : 'var(--primary-color)',
+                      color: 'var(--secondary-color)'
+                    }}
                   >
                     {followingIds.includes(user._id) ? 'Se désabonner' : 'Suivre'}
                   </button>

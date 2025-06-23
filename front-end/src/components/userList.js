@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+import Link from 'next/link';
+import { useThemeLang } from '@/context/ThemeLangContext';
 
-/**
- * Affiche la liste des utilisateurs suivis (sidebar).
- */
 export default function UserList() {
   const [following, setFollowing] = useState([]);
   const [error, setError] = useState('');
+  const { themeClasses } = useThemeLang();
 
   useEffect(() => {
     async function fetchFollowing() {
@@ -19,7 +19,6 @@ export default function UserList() {
           return;
         }
 
-        // Vérification simple du token
         try {
           jwtDecode(token);
         } catch {
@@ -35,7 +34,7 @@ export default function UserList() {
         }
 
         const res = await fetch(`http://localhost:4001/api/follows/${userId}/following`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
           throw new Error(`Erreur HTTP ${res.status}`);
@@ -51,24 +50,26 @@ export default function UserList() {
   }, []);
 
   return (
-      <aside className="hidden lg:block w-64 p-4 bg-gray-50 border-l border-gray-200">
-        <h2 className="text-lg font-semibold mb-4">Abonnements</h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-        {!error && following.length === 0 && (
-            <p className="text-gray-500 text-sm">Aucun abonnement</p>
-        )}
-        <ul className="space-y-3">
-          {following.map(user => (
-              <li key={user._id} className="flex items-center space-x-3">
-                <img
-                    src={user.avatarUrl || '/default-avatar.png'}
-                    alt={`Avatar de ${user.username}`}
-                    className="w-8 h-8 rounded-full object-cover"
-                />
-                <span className="font-medium">{user.username}</span>
-              </li>
-          ))}
-        </ul>
-      </aside>
+    <aside className={`hidden lg:block w-64 p-4 border-l ${themeClasses}`}>
+      <h2 className={`text-lg font-semibold mb-4`}>Abonnements</h2>
+      {error && <p className={`text-sm mb-2`}>{error}</p>}
+      {!error && following.length === 0 && (
+        <p className={`text-sm`}>Aucun abonnement</p>
+      )}
+      <ul className="space-y-3">
+        {following.map((user) => (
+          <li key={user._id} className="flex items-center space-x-3">
+            <Link href={`/profile/${user._id}`} className="flex items-center space-x-3 hover:underline">
+              <img
+                src={user.avatarUrl || '/default-avatar.png'}
+                alt={`Avatar de ${user.username}`}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+              <span className={`font-medium`}>{user.username}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </aside>
   );
 }
