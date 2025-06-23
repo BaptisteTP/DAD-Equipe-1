@@ -110,7 +110,7 @@ export default function MyProfilePage() {
           Retour
             </button>
             <button
-          onClick={() => router.push('/profile/edit')}
+          onClick={() => router.push('/profile/me/edit')}
           className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
           Modifier
