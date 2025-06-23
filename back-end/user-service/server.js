@@ -28,7 +28,7 @@ app.use(cors(corsOptions));
 app.use(helmet());
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 600,
   message: { message: 'Trop de requêtes, réessayez plus tard.' }
 }));
 

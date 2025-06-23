@@ -58,18 +58,31 @@ export default function UserList() {
         <p className={`text-sm`}>Aucun abonnement</p>
       )}
       <ul className="space-y-3">
-        {following.map((user) => (
-          <li key={user._id} className="flex items-center space-x-3">
-            <Link href={`/profile/${user._id}`} className="flex items-center space-x-3 hover:underline">
-              <img
-                  src={user.avatarUrl || defaultAvatar}
-              alt={`Avatar de ${user.username}`}
-              className="w-8 h-8 rounded-full object-cover"
-              />
-              <span className={`font-medium`}>{user.username}</span>
-            </Link>
-          </li>
-        ))}
+        {following.map((user) => {
+          // 1. Détermine l’URL finale de l’avatar
+          const avatarSrc = user.avatarUrl
+              ? (user.avatarUrl.startsWith('http')
+                  ? user.avatarUrl
+                  : `${apiUrl}${user.avatarUrl}`)
+              : defaultAvatar.src
+
+          return (
+              <li key={user._id} className="flex items-center space-x-3">
+                <Link
+                    href={`/profile/${user._id}`}
+                    className="flex items-center space-x-3 hover:underline"
+                >
+                  {/* <<< remplace cette balise : */}
+                  <img
+                      src={avatarSrc}
+                      alt={`Avatar de ${user.username}`}
+                      className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span className="font-medium">{user.username}</span>
+                </Link>
+              </li>
+          )
+        })}
       </ul>
     </aside>
   );
