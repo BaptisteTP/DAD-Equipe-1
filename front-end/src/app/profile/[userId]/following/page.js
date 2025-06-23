@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname, useParams } from 'next/navigation'
 import Image from 'next/image'
-import defaultAvatar from '@/assets/default-image.jpg'
 
 export default function OtherFollowingPage() {
     const router = useRouter()
@@ -82,11 +81,11 @@ export default function OtherFollowingPage() {
                     {users.map(u => (
                         <li key={u._id} className="flex items-center space-x-3">
                             <Image
-                                src={u.avatarUrl || defaultAvatar.src}
-                                alt={u.username}
-                                width={48}
-                                height={48}
-                                className="rounded-full object-cover"
+                            src={u.avatarUrl}
+                            alt={`Avatar de ${u.username}`}
+                            width={56}
+                            height={56}
+                            className="rounded-full object-cover"
                             />
                             <span className="font-medium">{u.username}</span>
                         </li>

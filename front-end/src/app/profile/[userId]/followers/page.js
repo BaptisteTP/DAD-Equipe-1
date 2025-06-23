@@ -82,10 +82,10 @@ export default function OtherFollowersPage() {
                     {users.map(u => (
                         <li key={u._id} className="flex items-center space-x-3">
                             <Image
-                                src={u.avatarUrl || defaultAvatar.src}
-                                alt={u.username}
-                                width={48}
-                                height={48}
+                                src={u.avatarUrl}
+                                alt={`Avatar de ${u.username}`}
+                                width={56}
+                                height={56}
                                 className="rounded-full object-cover"
                             />
                             <span className="font-medium">{u.username}</span>

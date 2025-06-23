@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Application Microservices – React & Express
 
-## Getting Started
+Ceci est une application web basée sur une architecture **microservices**, avec un frontend développé en **React** et deux services backend en **Express.js**.
 
-First, run the development server:
+## Pour commencer
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 1. Configuration des variables d’environnement
+
+Avant de lancer les services, crée les fichiers `.env` suivants :
+
+#### `back-end/content-service/.env`
+
+```env
+PORT=4002
+MONGO_URI=mongodb://content-db:27017/contentdb
+USER_SERVICE_URL=http://user-service:4001/
+JWT_SECRET=unSecretTresComplexeEtLong
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### `back-end/user-service/.env`
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```env
+PORT=4001
+MONGO_URI=mongodb://user-db:27017/userdb
+JWT_SECRET=unSecretTresComplexeEtLong
+TOKEN_EXPIRATION=24h
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Démarrer le backend (Docker)
 
-## Learn More
+Depuis la racine du projet, exécute la commande suivante :
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker-compose up --build -d
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Cela va construire et lancer les services suivants :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* `user-service` (port 4001)
+* `content-service` (port 4002)
+* Instances MongoDB pour chaque service
 
-## Deploy on Vercel
+### 3. Démarrer le frontend (React)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Dans un autre terminal :
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+cd front-end
+npm install
+npm run dev
+```
+
+Ouvre [http://localhost:5173](http://localhost:5173) dans ton navigateur pour accéder à l’application.
+
+## Structure du projet
+
+```
+project-root/
+├── front-end/                # Application React
+└── back-end/
+    ├── content-service/      # Microservice de gestion de contenu
+    └── user-service/         # Microservice de gestion des utilisateurs
+```
+
+## En savoir plus
+
+* [Documentation React](https://fr.react.dev/) – Apprends à créer des interfaces utilisateur avec React.
+* [Documentation Express](https://expressjs.com/fr/) – Découvre le framework web pour Node.js.
+* [Documentation Docker](https://docs.docker.com/) – Pour créer et gérer des conteneurs.
+* [Documentation MongoDB](https://www.mongodb.com/fr-fr/docs/) – Base de données NoSQL utilisée par le projet.
+

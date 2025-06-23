@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import  {jwtDecode} from 'jwt-decode'  // Import nommé obligatoire avec la version ESM
+import {jwtDecode} from 'jwt-decode'
 import defaultAvatar from '@/assets/default-image.jpg'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
@@ -32,10 +32,6 @@ export default function SearchPage() {
         const decoded = jwtDecode(token)
         console.log('Token décodé:', decoded)
 
-        // Affiche toutes les clés dans le token pour debug
-        console.log('Clés dans le token:', Object.keys(decoded))
-
-        // Essaye plusieurs clés possibles pour récupérer l'ID utilisateur
         const userId =
           decoded._id ||
           decoded.id ||
@@ -55,6 +51,9 @@ export default function SearchPage() {
         })
         if (!resUsers.ok) throw new Error("Erreur lors du chargement des utilisateurs.")
         const usersData = await resUsers.json()
+
+        console.log('Utilisateurs reçus:', usersData.users)
+
         setUsers(usersData.users)
         setFilteredUsers(usersData.users)
 
@@ -94,37 +93,31 @@ export default function SearchPage() {
     const isFollowing = followingIds.includes(userId)
 
     try {
-        const method = isFollowing ? 'DELETE' : 'POST'
-        const res = await fetch(`http://localhost:4001/api/follows/${userId}/follow`, {
+      const method = isFollowing ? 'DELETE' : 'POST'
+      const res = await fetch(`http://localhost:4001/api/follows/${userId}/follow`, {
         method,
         headers: { Authorization: `Bearer ${token}` }
-        })
+      })
 
-        if (!res.ok) {
-        // Lit le body une seule fois sous forme de texte brut
+      if (!res.ok) {
         const text = await res.text()
-
-        // Essaie de parser ce texte en JSON
         let errorMsg = ''
         try {
-            const data = JSON.parse(text)
-            errorMsg = data.message || JSON.stringify(data)
+          const data = JSON.parse(text)
+          errorMsg = data.message || JSON.stringify(data)
         } catch {
-            errorMsg = text
+          errorMsg = text
         }
-
         throw new Error(errorMsg || 'Erreur lors du suivi.')
-        }
+      }
 
-        setFollowingIds(prev =>
+      setFollowingIds(prev =>
         isFollowing ? prev.filter(id => id !== userId) : [...prev, userId]
-        )
+      )
     } catch (err) {
-        alert(err.message)
+      alert(err.message)
     }
-    }
-
-
+  }
 
   if (loading) return <p className="text-center mt-6">Chargement...</p>
   if (error) return <p className="text-red-500 text-center mt-6">{error}</p>
@@ -165,28 +158,28 @@ export default function SearchPage() {
                 key={user._id}
                 className="flex items-center justify-between p-4 border border-gray-200 rounded shadow-sm hover:bg-gray-50"
               >
-                  <Link
-                      href={`/profile/${user._id}`}
-                      className="flex items-center group"
-                  >
-                      <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-300 mr-4">
-                          <Image
-                              src={user.avatarUrl || defaultAvatar}
-                              alt={`Avatar de ${user.username}`}
-                              width={56}
-                              height={56}
-                              className="object-cover w-full h-full"
-                          />
-                      </div>
-                      <div>
-                          <p className="font-semibold text-black group-hover:underline">
-                              {user.username}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                              {user.bio || 'Pas de bio'}
-                          </p>
-                      </div>
-                  </Link>
+                <Link
+                  href={`/profile/${user._id}`}
+                  className="flex items-center group"
+                >
+                  <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-300 mr-4">
+                    <Image
+                      src={user.avatarUrl || defaultAvatar}
+                      alt={`Avatar de ${user.username}`}
+                      width={56}
+                      height={56}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-black group-hover:underline">
+                      {user.username}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {user.bio?.trim() ? user.bio : 'Pas de bio'}
+                    </p>
+                  </div>
+                </Link>
 
                 {user._id !== currentUserId && (
                   <button

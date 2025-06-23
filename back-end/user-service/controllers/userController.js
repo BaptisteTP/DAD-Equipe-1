@@ -35,11 +35,11 @@ const getUserProfile = async (req, res, next) => {
 
 /**
  * GET /api/users
- * Récupère tous les utilisateurs (username + avatarUrl uniquement)
+ * Récupère tous les utilisateurs (username + avatarUrl + bio)
  */
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find({}, 'username avatarUrl').lean();
+    const users = await User.find({}, 'username avatarUrl bio').lean();
     res.json({ users });
   } catch (err) {
     next(err);
