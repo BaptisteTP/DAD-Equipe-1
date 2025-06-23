@@ -143,7 +143,6 @@ export default function OtherProfilePage() {
       const token = localStorage.getItem('token')
       if (!token) throw new Error('Utilisateur non connecté')
 
-      // 2.a) Appel POST ou DELETE
       const res = await fetch(
           `http://localhost:4002/api/posts/${postId}/like`,
           {
@@ -154,14 +153,12 @@ export default function OtherProfilePage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
-      // 2.b) Met à jour la liste des IDs likés
+      // 1) Mets à jour TON état de likes
       setUserLikedIds(ids =>
-          isCurrentlyLiked
-              ? ids.filter(id => id !== postId)
-              : [...ids, postId]
+          isCurrentlyLiked ? ids.filter(id => id !== postId) : [...ids, postId]
       )
 
-      // 2.c) Met à jour le compteur dans posts
+      // 2) Mets à jour le compteur dans la liste "Posts"
       setPosts(list =>
           list.map(p =>
               p._id === postId
@@ -170,19 +167,16 @@ export default function OtherProfilePage() {
           )
       )
 
-      // 2.d) Met à jour likedPosts : on supprime ou on ajoute le post avec le nouveau compteur
-      setProfileLikedPosts(list => {
-        if (isCurrentlyLiked) {
-          // Si on enlève le like → on filtre
-          return list.filter(p => p._id !== postId)
-        } else {
-          // Si on ajoute le like → on reconstruit un nouvel objet avec le compteur incrémenté
-          const orig = posts.find(p => p._id === postId)
-          if (!orig) return list
-          const updated = { ...orig, likesCount: orig.likesCount + 1 }
-          return [updated, ...list]
-        }
-      })
+      // 3) Si tu es sur l’onglet "Liked" du profil visité, mets juste à jour le compteur
+      if (selectedTab === 'liked') {
+        setProfileLikedPosts(list =>
+            list.map(p =>
+                p._id === postId
+                    ? { ...p, likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1) }
+                    : p
+            )
+        )
+      }
     } catch (err) {
       alert(err.message)
     }
