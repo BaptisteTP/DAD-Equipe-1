@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname, useParams } from 'next/navigation'
 import Image from 'next/image'
-import defaultAvatar from '@/assets/default-image.jpg'
+import { useThemeLang } from '@/context/ThemeLangContext'
 
 export default function OtherFollowersPage() {
     const router = useRouter()
     const { userId } = useParams()
     const pathname = usePathname()
     const activeTab = pathname.endsWith('/following') ? 'following' : 'followers'
+    const { themeClasses } = useThemeLang()
 
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
@@ -37,7 +38,7 @@ export default function OtherFollowersPage() {
     }, [userId])
 
     return (
-        <div className="min-h-screen p-4 bg-white">
+        <div className={`flex flex-col min-h-screen transition-colors duration-300 ${themeClasses}`}>
             {/* ← Retour + onglets */}
             <div className="flex items-center mb-6">
                 <button
