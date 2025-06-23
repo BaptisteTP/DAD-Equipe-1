@@ -28,7 +28,7 @@ TOKEN_EXPIRATION=24h
 
 ### 2. Démarrer le backend (Docker)
 
-Depuis la racine du projet, exécute la commande suivante :
+Depuis la racine du projet, exécute la commande suivante (avec docker de lancer sur le pc):
 
 ```bash
 docker-compose up --build -d
@@ -62,11 +62,4 @@ project-root/
     ├── nginx/                # Microservice Nginx
     └── user-service/         # Microservice de gestion des utilisateurs
 ```
-
-## En savoir plus
-
-* [Documentation React](https://fr.react.dev/) – Apprends à créer des interfaces utilisateur avec React.
-* [Documentation Express](https://expressjs.com/fr/) – Découvre le framework web pour Node.js.
-* [Documentation Docker](https://docs.docker.com/) – Pour créer et gérer des conteneurs.
-* [Documentation MongoDB](https://www.mongodb.com/fr-fr/docs/) – Base de données NoSQL utilisée par le projet.
 
