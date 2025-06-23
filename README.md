@@ -13,7 +13,7 @@ Avant de lancer les services, crée les fichiers `.env` suivants :
 ```env
 PORT=4002
 MONGO_URI=mongodb://content-db:27017/contentdb
-USER_SERVICE_URL=http://user-service:4001/
+USER_SERVICE_URL=http://user-service:4001
 JWT_SECRET=unSecretTresComplexeEtLong
 ```
 
