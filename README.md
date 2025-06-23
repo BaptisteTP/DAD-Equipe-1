@@ -59,6 +59,7 @@ project-root/
 ├── front-end/                # Application React
 └── back-end/
     ├── content-service/      # Microservice de gestion de contenu
+    ├── nginx/                # Microservice Nginx
     └── user-service/         # Microservice de gestion des utilisateurs
 ```
 
