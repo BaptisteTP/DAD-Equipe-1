@@ -8,6 +8,8 @@ import defaultAvatar from '@/assets/default-image.jpg'
 import {jwtDecode} from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from "next/link";
+import {HomeIcon} from "@heroicons/react/24/outline";
 
 export default function MyProfilePage() {
   const router = useRouter()
@@ -70,23 +72,55 @@ export default function MyProfilePage() {
   const handleShowFollowing = () => router.push('/profile/me/following')
   const handleShowFollowers = () => router.push('/profile/me/followers')
 
-  const handleToggleLike = async (postId, isLiked) => {
+  const handleToggleLike = async (postId, isCurrentlyLiked) => {
     try {
       const token = localStorage.getItem('token')
-      if (!token) return
-      const method = isLiked ? 'DELETE' : 'POST'
-      const res = await fetch(`http://localhost:4002/api/posts/${postId}/like`, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) return
+      if (!token) throw new Error('Utilisateur non connecté')
 
-      setLikedIds((prev) => isLiked ? prev.filter((id) => id !== postId) : [...prev, postId])
+      // 2.a) Appel POST ou DELETE
+      const res = await fetch(
+          `http://localhost:4002/api/posts/${postId}/like`,
+          {
+            method: isCurrentlyLiked ? 'DELETE' : 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+
+      // 2.b) Met à jour la liste des IDs likés
+      setLikedIds(ids =>
+          isCurrentlyLiked
+              ? ids.filter(id => id !== postId)
+              : [...ids, postId]
+      )
+
+      // 2.c) Met à jour le compteur dans posts
+      setPosts(list =>
+          list.map(p =>
+              p._id === postId
+                  ? { ...p, likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1) }
+                  : p
+          )
+      )
+
+      // 2.d) Met à jour likedPosts : on supprime ou on ajoute le post avec le nouveau compteur
+      setLikedPosts(list => {
+        if (isCurrentlyLiked) {
+          // Si on enlève le like → on filtre
+          return list.filter(p => p._id !== postId)
+        } else {
+          // Si on ajoute le like → on reconstruit un nouvel objet avec le compteur incrémenté
+          const orig = posts.find(p => p._id === postId)
+          if (!orig) return list
+          const updated = { ...orig, likesCount: orig.likesCount + 1 }
+          return [updated, ...list]
+        }
+      })
     } catch (err) {
-      console.error(err)
+      alert(err.message)
     }
   }
-
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>
 
@@ -103,17 +137,22 @@ export default function MyProfilePage() {
 
         <main className="flex-1 p-4 overflow-auto flex flex-col">
           <header className="flex justify-between items-center mb-4">
+            {/* ← Bouton Home */}
+            <Link href="/home" className="p-2 text-gray-800 hover:text-gray-900">
+              <HomeIcon className="w-6 h-6" />
+            </Link>
+
+            {/* Titre de la page */}
+            <h1 className="text-xl font-semibold text-black dark:text-white">
+              Mon profil
+            </h1>
+
+            {/* Bouton Modifier */}
             <button
-          onClick={() => router.back()}
-          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                onClick={() => router.push('/profile/me/edit')}
+                className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
-          Retour
-            </button>
-            <button
-          onClick={() => router.push('/profile/edit')}
-          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-            >
-          Modifier
+              Modifier
             </button>
           </header>
 

@@ -103,37 +103,10 @@ export default function HomePage() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [isNavbarOpen]);
 
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    function handleTouchStart(e) {
-      if (window.innerWidth > 1024) return;
-      touchStartX = e.changedTouches[0].clientX;
-    }
-
-    function handleTouchEnd(e) {
-      if (window.innerWidth > 1024) return;
-      touchEndX = e.changedTouches[0].clientX;
-
-      const distance = touchEndX - touchStartX;
-      if (distance > 60) setIsNavbarOpen(true);
-      if (distance < -60) setIsNavbarOpen(false);
-    }
-
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, []);
-
   return (
     <div className={`min-h-screen flex flex-col ${themeClasses}`}>
       <div className="block lg:hidden">
-        <Header onProfileClick={() => setIsNavbarOpen((o) => !o)} />
+        <Header onBurgerClick={() => setIsNavbarOpen((o) => !o)} />
       </div>
 
       <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">

@@ -7,14 +7,17 @@ import Navbar from '@/components/navbar'
 import defaultAvatar from '@/assets/default-image.jpg'
 import { jwtDecode } from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
+import Link from "next/link";  // ou inline SVG
+import { motion, AnimatePresence } from 'framer-motion'
+import { HomeIcon } from '@heroicons/react/24/outline'
 
 export default function OtherProfilePage() {
   const router = useRouter()
   const { userId } = useParams()
   const [user, setUser] = useState(null)
-  const [posts, setPosts] = useState([])
-  const [likedPosts, setLikedPosts] = useState([])
-  const [likedIds, setLikedIds] = useState([])
+  const [posts, setPosts] = useState([])                     // 🔵 posts de ce profil
+  const [profileLikedPosts, setProfileLikedPosts] = useState([]) // 🟢 posts que CE profil a likés
+  const [userLikedIds, setUserLikedIds] = useState([])           // 🔴 posts que J’AI likés
   const [isFollowing, setIsFollowing] = useState(false)
   const [selectedTab, setSelectedTab] = useState('posts')
   const [loading, setLoading] = useState(true)
@@ -65,7 +68,7 @@ export default function OtherProfilePage() {
           (decoded.user && decoded.user._id)
         if (!currentUserId) throw new Error('ID utilisateur introuvable.')
 
-        const [uRes, pRes, lRes, fRes] = await Promise.all([
+        const [uRes, pRes, plRes, ulRes, fRes] = await Promise.all([
           fetch(`http://localhost:4001/api/users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -75,28 +78,34 @@ export default function OtherProfilePage() {
           fetch(`http://localhost:4002/api/posts/user/${userId}/liked`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
+          fetch(`http://localhost:4002/api/posts/liked`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
           fetch(`http://localhost:4001/api/follows/${currentUserId}/following`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ])
 
-        if (!uRes.ok) throw new Error(`Profil : ${uRes.status}`)
-        if (!pRes.ok) throw new Error(`Posts : ${pRes.status}`)
-        if (!lRes.ok) throw new Error(`Liked : ${lRes.status}`)
-        if (!fRes.ok) throw new Error(`Follow : ${fRes.status}`)
+        if (!uRes.ok) throw new Error(`Profil : ${uRes.status}`);
+        if (!pRes.ok) throw new Error(`Posts : ${pRes.status}`);
+        if (!plRes.ok) throw new Error(`Posts likés du profil : ${plRes.status}`);
+        if (!ulRes.ok) throw new Error(`Vos posts likés : ${ulRes.status}`);
+        if (!fRes.ok) throw new Error(`Follow : ${fRes.status}`);
 
-        const [uData, pData, lData, fData] = await Promise.all([
+
+        const [uData, pData, plData, ulData, fData] = await Promise.all([
           uRes.json(),
           pRes.json(),
-          lRes.json(),
+          plRes.json(),
+          ulRes.json(),
           fRes.json(),
         ])
 
-        setUser({ ...uData.user, stats: uData.stats })
-        setPosts(Array.isArray(pData) ? pData : [])
-        setLikedPosts(Array.isArray(lData) ? lData : [])
-        setLikedIds(Array.isArray(lData) ? lData.map((p) => p._id) : [])
-        setIsFollowing(Array.isArray(fData) && fData.some((u) => u._id === userId))
+        setUser({ ...uData.user, stats: uData.stats });
+        setPosts(Array.isArray(pData) ? pData : []);
+        setProfileLikedPosts(Array.isArray(plData) ? plData : []);
+        setUserLikedIds(Array.isArray(ulData) ? ulData.map((p) => p._id) : []);
+        setIsFollowing(Array.isArray(fData) && fData.some((u) => u._id === userId));
       } catch (err) {
         setError(err.message)
       } finally {
@@ -129,6 +138,49 @@ export default function OtherProfilePage() {
       alert(err.message)
     }
   }
+  const handleToggleLike = async (postId, isCurrentlyLiked) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) throw new Error('Utilisateur non connecté')
+
+      const res = await fetch(
+          `http://localhost:4002/api/posts/${postId}/like`,
+          {
+            method: isCurrentlyLiked ? 'DELETE' : 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+
+      // 1) Mets à jour TON état de likes
+      setUserLikedIds(ids =>
+          isCurrentlyLiked ? ids.filter(id => id !== postId) : [...ids, postId]
+      )
+
+      // 2) Mets à jour le compteur dans la liste "Posts"
+      setPosts(list =>
+          list.map(p =>
+              p._id === postId
+                  ? { ...p, likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1) }
+                  : p
+          )
+      )
+
+      // 3) Si tu es sur l’onglet "Liked" du profil visité, mets juste à jour le compteur
+      if (selectedTab === 'liked') {
+        setProfileLikedPosts(list =>
+            list.map(p =>
+                p._id === postId
+                    ? { ...p, likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1) }
+                    : p
+            )
+        )
+      }
+    } catch (err) {
+      alert(err.message)
+    }
+  }
 
   const handleShowFollowing = () => router.push(`/profile/${userId}/following`)
   const handleShowFollowers = () => router.push(`/profile/${userId}/followers`)
@@ -136,33 +188,34 @@ export default function OtherProfilePage() {
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>
 
-  const displayList = selectedTab === 'posts' ? posts : likedPosts
+  const displayList = selectedTab === 'posts' ? posts : profileLikedPosts
 
   return (
-    <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
-      <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
-        <Navbar />
-      </aside>
 
-      <main className="flex-1 p-4 overflow-auto flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => router.push('/home')}
-            className="hover:underline text-gray-800 dark:text-white"
-          >
-            ← Retour
-          </button>
-          <button
-            onClick={handleToggleFollow}
-            className={`px-4 py-1 rounded-full text-sm font-medium ${
-              isFollowing
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {isFollowing ? 'Se désabonner' : 'Suivre'}
-          </button>
-        </div>
+      <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
+        {/* sidebar desktop */}
+        <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
+          <Navbar/>
+        </aside>
+
+        <main className="flex-1 p-4 flex flex-col">
+          {/* ← Header avec HomeIcon */}
+          <header className="flex items-center justify-between mb-4">
+            <Link href="/home" className="p-2 text-gray-800 hover:text-gray-900">
+              <HomeIcon className="w-6 h-6"/>
+            </Link>
+            <h1 className="text-xl font-semibold text-black dark:text-white">
+              Profil de {user.username}
+            </h1>
+            <button
+                onClick={handleToggleFollow}
+                className={`px-4 py-1 rounded-full text-sm font-medium ${
+                    isFollowing ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+                }`}
+            >
+              {isFollowing ? 'Se désabonner' : 'Suivre'}
+            </button>
+          </header>
 
         {/* Avatar + bio */}
         <div className="flex items-center space-x-4 mb-4">
@@ -235,7 +288,7 @@ export default function OtherProfilePage() {
             </p>
           ) : (
             displayList.map((post) => {
-              const isLiked = likedIds.includes(post._id)
+              const isLiked = userLikedIds.includes(post._id)
               return (
                 <Post
                   key={post._id}
@@ -247,9 +300,7 @@ export default function OtherProfilePage() {
                   comment={post.commentsCount ?? 0}
                   share={0}
                   liked={isLiked}
-                  onToggleLike={() => {
-                    // Logique like à ajouter si besoin
-                  }}
+                  onToggleLike={() => handleToggleLike(post._id, isLiked)}
                 />
               )
             })

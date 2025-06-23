@@ -51,9 +51,7 @@ export default function FollowingPage() {
         }
         fetchFollowing();
     }, []);
-    const avatarSrc = users.avatarUrl && users.avatarUrl !== ""
-        ? users.avatarUrl
-        : "/default-avatar.png";
+
     return (
         <div className="min-h-screen p-4 bg-white">
             {/* En-tête avec switch d’onglets */}
@@ -100,10 +98,10 @@ export default function FollowingPage() {
                     {users.map((user) => (
                         <li key={user._id} className="flex items-center space-x-3">
                             <Image
-                                src={avatarSrc}
-                                alt={user.username}
-                                width={48}
-                                height={48}
+                                src={user.avatarUrl || defaultAvatar}
+                                alt={`Avatar de ${user.username}`}
+                                width={56}
+                                height={56}
                                 className="rounded-full object-cover"
                             />
                             <span className="font-medium">{user.username}</span>

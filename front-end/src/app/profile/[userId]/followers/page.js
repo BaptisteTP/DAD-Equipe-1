@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useThemeLang } from '@/context/ThemeLangContext'
+import defaultAvatar from "@/assets/default-image.jpg";
 
 export default function OtherFollowersPage() {
     const router = useRouter()
@@ -80,16 +81,16 @@ export default function OtherFollowersPage() {
                 <p>Aucun abonné pour le moment.</p>
             ) : (
                 <ul className="space-y-4">
-                    {users.map(u => (
-                        <li key={u._id} className="flex items-center space-x-3">
+                    {users.map(user => (
+                        <li key={user._id} className="flex items-center space-x-3">
                             <Image
-                                src={u.avatarUrl}
-                                alt={`Avatar de ${u.username}`}
+                                src={user.avatarUrl || defaultAvatar}
+                                alt={`Avatar de ${user.username}`}
                                 width={56}
                                 height={56}
                                 className="rounded-full object-cover"
                             />
-                            <span className="font-medium">{u.username}</span>
+                            <span className="font-medium">{user.username}</span>
                         </li>
                     ))}
                 </ul>
