@@ -15,9 +15,9 @@ export default function OtherProfilePage() {
   const router = useRouter()
   const { userId } = useParams()
   const [user, setUser] = useState(null)
-  const [posts, setPosts] = useState([])
-  const [likedPosts, setLikedPosts] = useState([])
-  const [likedIds, setLikedIds] = useState([])
+  const [posts, setPosts] = useState([])                     // 🔵 posts de ce profil
+  const [profileLikedPosts, setProfileLikedPosts] = useState([]) // 🟢 posts que CE profil a likés
+  const [userLikedIds, setUserLikedIds] = useState([])           // 🔴 posts que J’AI likés
   const [isFollowing, setIsFollowing] = useState(false)
   const [selectedTab, setSelectedTab] = useState('posts')
   const [loading, setLoading] = useState(true)
@@ -68,7 +68,7 @@ export default function OtherProfilePage() {
           (decoded.user && decoded.user._id)
         if (!currentUserId) throw new Error('ID utilisateur introuvable.')
 
-        const [uRes, pRes, lRes, fRes] = await Promise.all([
+        const [uRes, pRes, plRes, ulRes, fRes] = await Promise.all([
           fetch(`http://localhost:4001/api/users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -78,28 +78,34 @@ export default function OtherProfilePage() {
           fetch(`http://localhost:4002/api/posts/user/${userId}/liked`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
+          fetch(`http://localhost:4002/api/posts/liked`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
           fetch(`http://localhost:4001/api/follows/${currentUserId}/following`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ])
 
-        if (!uRes.ok) throw new Error(`Profil : ${uRes.status}`)
-        if (!pRes.ok) throw new Error(`Posts : ${pRes.status}`)
-        if (!lRes.ok) throw new Error(`Liked : ${lRes.status}`)
-        if (!fRes.ok) throw new Error(`Follow : ${fRes.status}`)
+        if (!uRes.ok) throw new Error(`Profil : ${uRes.status}`);
+        if (!pRes.ok) throw new Error(`Posts : ${pRes.status}`);
+        if (!plRes.ok) throw new Error(`Posts likés du profil : ${plRes.status}`);
+        if (!ulRes.ok) throw new Error(`Vos posts likés : ${ulRes.status}`);
+        if (!fRes.ok) throw new Error(`Follow : ${fRes.status}`);
 
-        const [uData, pData, lData, fData] = await Promise.all([
+
+        const [uData, pData, plData, ulData, fData] = await Promise.all([
           uRes.json(),
           pRes.json(),
-          lRes.json(),
+          plRes.json(),
+          ulRes.json(),
           fRes.json(),
         ])
 
-        setUser({ ...uData.user, stats: uData.stats })
-        setPosts(Array.isArray(pData) ? pData : [])
-        setLikedPosts(Array.isArray(lData) ? lData : [])
-        setLikedIds(Array.isArray(lData) ? lData.map((p) => p._id) : [])
-        setIsFollowing(Array.isArray(fData) && fData.some((u) => u._id === userId))
+        setUser({ ...uData.user, stats: uData.stats });
+        setPosts(Array.isArray(pData) ? pData : []);
+        setProfileLikedPosts(Array.isArray(plData) ? plData : []);
+        setUserLikedIds(Array.isArray(ulData) ? ulData.map((p) => p._id) : []);
+        setIsFollowing(Array.isArray(fData) && fData.some((u) => u._id === userId));
       } catch (err) {
         setError(err.message)
       } finally {
@@ -132,6 +138,55 @@ export default function OtherProfilePage() {
       alert(err.message)
     }
   }
+  const handleToggleLike = async (postId, isCurrentlyLiked) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) throw new Error('Utilisateur non connecté')
+
+      // 2.a) Appel POST ou DELETE
+      const res = await fetch(
+          `http://localhost:4002/api/posts/${postId}/like`,
+          {
+            method: isCurrentlyLiked ? 'DELETE' : 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+
+      // 2.b) Met à jour la liste des IDs likés
+      setUserLikedIds(ids =>
+          isCurrentlyLiked
+              ? ids.filter(id => id !== postId)
+              : [...ids, postId]
+      )
+
+      // 2.c) Met à jour le compteur dans posts
+      setPosts(list =>
+          list.map(p =>
+              p._id === postId
+                  ? { ...p, likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1) }
+                  : p
+          )
+      )
+
+      // 2.d) Met à jour likedPosts : on supprime ou on ajoute le post avec le nouveau compteur
+      setProfileLikedPosts(list => {
+        if (isCurrentlyLiked) {
+          // Si on enlève le like → on filtre
+          return list.filter(p => p._id !== postId)
+        } else {
+          // Si on ajoute le like → on reconstruit un nouvel objet avec le compteur incrémenté
+          const orig = posts.find(p => p._id === postId)
+          if (!orig) return list
+          const updated = { ...orig, likesCount: orig.likesCount + 1 }
+          return [updated, ...list]
+        }
+      })
+    } catch (err) {
+      alert(err.message)
+    }
+  }
 
   const handleShowFollowing = () => router.push(`/profile/${userId}/following`)
   const handleShowFollowers = () => router.push(`/profile/${userId}/followers`)
@@ -139,7 +194,7 @@ export default function OtherProfilePage() {
   if (loading) return <div className="p-4 text-center">Chargement…</div>
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>
 
-  const displayList = selectedTab === 'posts' ? posts : likedPosts
+  const displayList = selectedTab === 'posts' ? posts : profileLikedPosts
 
   return (
 
@@ -239,7 +294,7 @@ export default function OtherProfilePage() {
             </p>
           ) : (
             displayList.map((post) => {
-              const isLiked = likedIds.includes(post._id)
+              const isLiked = userLikedIds.includes(post._id)
               return (
                 <Post
                   key={post._id}
@@ -251,9 +306,7 @@ export default function OtherProfilePage() {
                   comment={post.commentsCount ?? 0}
                   share={0}
                   liked={isLiked}
-                  onToggleLike={() => {
-                    // Logique like à ajouter si besoin
-                  }}
+                  onToggleLike={() => handleToggleLike(post._id, isLiked)}
                 />
               )
             })

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Link from 'next/link';
 import { useThemeLang } from '@/context/ThemeLangContext';
+import defaultAvatar from '@/assets/default-image.jpg';
 
 export default function UserList() {
   const [following, setFollowing] = useState([]);
@@ -61,9 +62,9 @@ export default function UserList() {
           <li key={user._id} className="flex items-center space-x-3">
             <Link href={`/profile/${user._id}`} className="flex items-center space-x-3 hover:underline">
               <img
-                src={user.avatarUrl || '/default-avatar.png'}
-                alt={`Avatar de ${user.username}`}
-                className="w-8 h-8 rounded-full object-cover"
+                  src={user.avatarUrl || defaultAvatar}
+              alt={`Avatar de ${user.username}`}
+              className="w-8 h-8 rounded-full object-cover"
               />
               <span className={`font-medium`}>{user.username}</span>
             </Link>
