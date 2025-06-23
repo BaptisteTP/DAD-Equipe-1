@@ -7,6 +7,9 @@ import Navbar from '@/components/navbar'
 import defaultAvatar from '@/assets/default-image.jpg'
 import { jwtDecode } from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
+import Link from "next/link";  // ou inline SVG
+import { motion, AnimatePresence } from 'framer-motion'
+import { HomeIcon } from '@heroicons/react/24/outline'
 
 export default function OtherProfilePage() {
   const router = useRouter()
@@ -139,30 +142,31 @@ export default function OtherProfilePage() {
   const displayList = selectedTab === 'posts' ? posts : likedPosts
 
   return (
-    <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
-      <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
-        <Navbar />
-      </aside>
 
-      <main className="flex-1 p-4 overflow-auto flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => router.push('/home')}
-            className="hover:underline text-gray-800 dark:text-white"
-          >
-            ← Retour
-          </button>
-          <button
-            onClick={handleToggleFollow}
-            className={`px-4 py-1 rounded-full text-sm font-medium ${
-              isFollowing
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {isFollowing ? 'Se désabonner' : 'Suivre'}
-          </button>
-        </div>
+      <div className={`min-h-screen flex flex-col lg:flex-row ${themeClasses}`}>
+        {/* sidebar desktop */}
+        <aside className="hidden lg:block w-64 border-r border-gray-300 dark:border-gray-700">
+          <Navbar/>
+        </aside>
+
+        <main className="flex-1 p-4 flex flex-col">
+          {/* ← Header avec HomeIcon */}
+          <header className="flex items-center justify-between mb-4">
+            <Link href="/home" className="p-2 text-gray-800 hover:text-gray-900">
+              <HomeIcon className="w-6 h-6"/>
+            </Link>
+            <h1 className="text-xl font-semibold text-black dark:text-white">
+              Profil de {user.username}
+            </h1>
+            <button
+                onClick={handleToggleFollow}
+                className={`px-4 py-1 rounded-full text-sm font-medium ${
+                    isFollowing ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+                }`}
+            >
+              {isFollowing ? 'Se désabonner' : 'Suivre'}
+            </button>
+          </header>
 
         {/* Avatar + bio */}
         <div className="flex items-center space-x-4 mb-4">

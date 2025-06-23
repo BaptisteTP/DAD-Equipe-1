@@ -8,6 +8,8 @@ import defaultAvatar from '@/assets/default-image.jpg'
 import {jwtDecode} from 'jwt-decode'
 import { useThemeLang } from '@/context/ThemeLangContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from "next/link";
+import {HomeIcon} from "@heroicons/react/24/outline";
 
 export default function MyProfilePage() {
   const router = useRouter()
@@ -103,17 +105,22 @@ export default function MyProfilePage() {
 
         <main className="flex-1 p-4 overflow-auto flex flex-col">
           <header className="flex justify-between items-center mb-4">
+            {/* ← Bouton Home */}
+            <Link href="/home" className="p-2 text-gray-800 hover:text-gray-900">
+              <HomeIcon className="w-6 h-6" />
+            </Link>
+
+            {/* Titre de la page */}
+            <h1 className="text-xl font-semibold text-black dark:text-white">
+              Mon profil
+            </h1>
+
+            {/* Bouton Modifier */}
             <button
-          onClick={() => router.back()}
-          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                onClick={() => router.push('/profile/me/edit')}
+                className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
-          Retour
-            </button>
-            <button
-          onClick={() => router.push('/profile/me/edit')}
-          className="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-            >
-          Modifier
+              Modifier
             </button>
           </header>
 
