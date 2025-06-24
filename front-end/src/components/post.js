@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useThemeLang } from '@/context/ThemeLangContext';
 
 const Post = ({
-  authorId,
-  username,
-  content,
-  image,
-  like,
-  comment,
-  _id: postId,
-  liked = false,
-  onToggleLike,
+                _id: postId,
+                authorId,
+                username,
+                content,
+                image,
+                like,
+                comment,
+                liked = false,
+                onToggleLike,
 }) => {
   const { themeClasses } = useThemeLang();
 
@@ -81,7 +81,7 @@ const Post = ({
 
 
         <Link
-          href={`/${postId}`}
+          href={`/post/${postId}`}
           className="flex items-center gap-1 hover:text-blue-600"
         >
           <svg
