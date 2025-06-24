@@ -80,9 +80,6 @@ export default function Navbar() {
           <div onClick={() => handleRedirect('/home')}>
             <NavItem icon={<HomeIcon />} label="Home" />
           </div>
-          <div onClick={() => handleRedirect('/profile/me/likes')}>
-            <NavItem icon={<LikeIcon />} label="Like" />
-          </div>
           <div onClick={() => handleRedirect('/search')}>
             <NavItem icon={<SearchIcon />} label="Search" />
           </div>
