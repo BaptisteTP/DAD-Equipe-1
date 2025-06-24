@@ -118,11 +118,26 @@ const getUserLikedPosts = async (req, res, next) => {
   }
 };
 
+const getPostById = async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post non trouvé.' });
+    }
+
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createPost,
   getUserPosts,
   getFeed,
   getLikedPosts,
   getUserLikedPosts,
-
+  getPostById,
 };

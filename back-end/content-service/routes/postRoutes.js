@@ -2,7 +2,7 @@ const express      = require('express');
 const { body }    = require('express-validator');
 const router       = express.Router();
 const authenticate = require('../middleware/authJwt');
-const { createPost, getUserPosts, getFeed, getLikedPosts, getUserLikedPosts  } = require('../controllers/postController');
+const { createPost, getUserPosts, getFeed, getLikedPosts, getUserLikedPosts, getPostById } = require('../controllers/postController');
 const validate   = require('../middleware/validate');
 const { param } = require('express-validator');
 
@@ -21,6 +21,7 @@ router.post(
   validate,
   createPost
 );
+router.get('/posts/:postId', getPostById);
 
 // Récupérer le fil d’actualité 
 router.get('/feed', authenticate, getFeed);

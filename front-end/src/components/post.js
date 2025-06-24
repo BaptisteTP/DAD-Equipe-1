@@ -10,7 +10,7 @@ const Post = ({
   image,
   like,
   comment,
-  share,
+  _id: postId,
   liked = false,
   onToggleLike,
 }) => {
@@ -80,7 +80,10 @@ const Post = ({
 
 
 
-        <button className="flex items-center gap-1 hover:text-blue-600">
+        <Link
+          href={`/${postId}`}
+          className="flex items-center gap-1 hover:text-blue-600"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -96,7 +99,7 @@ const Post = ({
             />
           </svg>
           {comment}
-        </button>
+        </Link>
       </div>
     </div>
   );
