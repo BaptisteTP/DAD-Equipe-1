@@ -58,6 +58,7 @@ export default function Navbar() {
   return (
     <aside
       className={`flex flex-col justify-between w-64 h-screen p-6 border-r bg-[var(--bg-color)] text-[var(--text-color)] ${themeClasses}`}
+      style={{ zIndex: 1000, position: 'fixed', left: 0, top: 0 }}
     >
       <div>
         <div className="flex flex-col mb-10">

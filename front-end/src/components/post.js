@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useThemeLang } from '@/context/ThemeLangContext';
 
 const Post = ({
-                _id: postId,
-                authorId,
-                username,
-                content,
-                image,
-                like,
-                comment,
-                liked = false,
-                onToggleLike,
+  _id : postId,
+  authorId,
+  username,
+  content,
+  image,
+  like,
+  comment,
+  liked = false,
+  onToggleLike,
 }) => {
   const { themeClasses } = useThemeLang();
 

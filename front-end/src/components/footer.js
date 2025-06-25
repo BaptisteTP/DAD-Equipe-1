@@ -8,8 +8,8 @@ export default function Footer() {
   const { themeClasses } = useThemeLang();
 
   return (
-    <footer className={`fixed bottom-0 left-0 right-0 z-50 border-t dark:bg-gray-900 ${themeClasses}`}>
-      <nav className="flex justify-around items-center h-16 text-gray-700 dark:text-gray-200">
+    <footer className={`fixed bottom-0 left-0 right-0 z-50 border-t bg-[var(--bg-color)] text-[var(--text-color)] ${themeClasses}`}>
+      <nav className="flex justify-around items-center h-16">
         {/* Home */}
         <Link href="/home" aria-label="Accueil" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
