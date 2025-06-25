@@ -132,7 +132,6 @@ export default function HomePage() {
             posts.map((post) => (
               <Post
                 key={post._id}
-                _id={post._id}
                 authorId={post.authorId}
                 image={post.authorAvatarUrl}
                 username={post.authorUsername}
