@@ -1,5 +1,6 @@
 const Comment = require('../models/Comment');
 const Post    = require('../models/Post');
+const axios = require("axios");
 
 const addComment = async (req, res, next) => {
   try {
@@ -17,21 +18,32 @@ const addComment = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: 'Post introuvable.' });
     }
+    const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:4001';
+    const token = req.headers.authorization;
+    const { data } = await axios.get(
+        `${USER_SERVICE_URL}/api/users/${req.user.userId}`,
+        { headers: { Authorization: token } }
+    );
+    const { username, avatarUrl } = data.user;
+
+    console.log(req.user)
 
     // Créer le commentaire
     const comment = await Comment.create({
-      author:        req.user._id,
+      author:        req.user.userId,
+      authorUsername:  username,
+      authorAvatarUrl: avatarUrl,
       post:          postId,
       content,
       parentComment: parentComment || null,
     });
 
     // On renvoie le commentaire peuplé (auteur)
-    const populated = await comment
-      .populate('author', 'username avatarUrl')
-      .execPopulate();
+    // const populated = await comment
+    //   .populate('author', 'username avatarUrl')
 
-    res.status(201).json(populated);
+
+    res.status(201).json(comment);
   } catch (err) {
     next(err);
   }
@@ -50,8 +62,6 @@ const getComments = async (req, res, next) => {
     // Récupérer tous les commentaires du post, triés par date
     const comments = await Comment.find({ post: postId })
       .sort({ createdAt: 1 })
-      .populate('author', 'username avatarUrl');
-
     res.json(comments);
   } catch (err) {
     next(err);
