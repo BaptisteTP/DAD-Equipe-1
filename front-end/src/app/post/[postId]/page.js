@@ -2,139 +2,269 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export default function PostPage() {
-    const { postId } = useParams();
-    const router = useRouter();
+  const { postId } = useParams();
+  const router = useRouter();
 
-    const [user, setUser] = useState(null);
-    const [post, setPost] = useState(null);
-    const [commentContent, setCommentContent] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [postingComment, setPostingComment] = useState(false);
+  const [user, setUser] = useState(null);
+  const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentContent, setCommentContent] = useState('');
+  const [replyToCommentId, setReplyToCommentId] = useState(null); // ID commentaire parent si réponse
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [postingComment, setPostingComment] = useState(false);
 
-    useEffect(() => {
-        async function fetchUserAndPost() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) throw new Error('Non connecté.');
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Non connecté.');
 
-                const decoded = jwtDecode(token);
-                const userId = decoded.userId || decoded.id || decoded._id || decoded.sub || (decoded.user && decoded.user._id);
-                if (!userId) throw new Error('Token invalide.');
+        const decoded = jwtDecode(token);
+        const userId =
+            decoded.userId || decoded.id || decoded._id || decoded.sub || (decoded.user && decoded.user._id);
+        if (!userId) throw new Error('Token invalide.');
 
-                // Fetch user info
-                const uRes = await fetch(`http://localhost:4001/api/users/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!uRes.ok) throw new Error('Erreur récupération utilisateur');
-                const uData = await uRes.json();
-                setUser(uData.user);
+        const headers = { Authorization: `Bearer ${token}` };
 
-                // Fetch post info
-                const pRes = await fetch(`http://localhost:4002/api/posts/posts/${postId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!pRes.ok) throw new Error('Post introuvable');
-                const pData = await pRes.json();
-                setPost(pData);
+        // Fetch user
+        const uRes = await fetch(`http://localhost:4001/api/users/${userId}`, { headers });
+        if (!uRes.ok) throw new Error('Erreur récupération utilisateur');
+        const uData = await uRes.json();
+        setUser(uData.user);
 
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
+        // Fetch post
+        const pRes = await fetch(`http://localhost:4002/api/posts/posts/${postId}`, { headers });
+        if (!pRes.ok) throw new Error('Post introuvable');
+        const pData = await pRes.json();
+        setPost(pData);
+
+        // Fetch comments
+        const cRes = await fetch(`http://localhost:4002/api/posts/${postId}/comments`, { headers });
+        if (!cRes.ok) throw new Error('Erreur récupération commentaires');
+        const cData = await cRes.json();
+
+        if (Array.isArray(cData)) {
+          setComments(cData);
+        } else if (cData.comments && Array.isArray(cData.comments)) {
+          setComments(cData.comments);
+        } else {
+          setComments([]);
         }
-        fetchUserAndPost();
-    }, [postId]);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    const handleAddComment = async () => {
-        if (!commentContent.trim()) return;
+    fetchData();
+  }, [postId]);
 
-        setPostingComment(true);
-        setError(null);
+  // Construire arbre avec parentComment
+  function buildCommentsTree(commentsList) {
+    const map = {};
+    const roots = [];
 
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) throw new Error('Non connecté.');
+    commentsList.forEach((c) => {
+      map[c._id || c.id] = { ...c, children: [] };
+    });
 
-            const res = await fetch(`http://localhost:4002/api/posts/${postId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    content: commentContent,
-                    author: user._id,  // ton userId injecté
-                }),
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Erreur lors de l\'ajout du commentaire');
-            }
-
-            setCommentContent('');
-            alert('Commentaire ajouté !');
-            // Optionnel: tu peux recharger les commentaires ici
-
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setPostingComment(false);
+    commentsList.forEach((c) => {
+      // Si parentComment === postId => racine sinon enfant d'un commentaire
+      if (c.parentComment && c.parentComment !== postId) {
+        if (map[c.parentComment]) {
+          map[c.parentComment].children.push(map[c._id || c.id]);
         }
-    };
+      } else {
+        roots.push(map[c._id || c.id]);
+      }
+    });
 
-    if (loading) return <div className="text-center mt-10 text-gray-600">Chargement…</div>;
-    if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
-    if (!post) return <div className="text-center mt-10">Post non trouvé.</div>;
+    return roots;
+  }
+
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+    setPostingComment(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Non connecté.');
+
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Si c'est une réponse à un commentaire -> parentComment = id du commentaire
+      // Sinon parentComment = id du post
+      const bodyData = {
+        content: commentContent,
+        author: user._id,
+        post: postId,
+        parentComment: replyToCommentId ? replyToCommentId : postId,
+      };
+
+      const res = await fetch(`http://localhost:4002/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Erreur lors de l\'ajout du commentaire');
+      }
+
+      setCommentContent('');
+      setReplyToCommentId(null);
+
+      // Re-fetch comments après ajout
+      const cRes = await fetch(`http://localhost:4002/api/posts/${postId}/comments`, { headers });
+      if (!cRes.ok) throw new Error('Erreur récupération commentaires');
+      const cData = await cRes.json();
+
+      if (Array.isArray(cData)) {
+        setComments(cData);
+      } else if (cData.comments && Array.isArray(cData.comments)) {
+        setComments(cData.comments);
+      } else {
+        setComments([]);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  // Composant récursif pour afficher commentaires + réponses
+  const CommentItem = ({ comment, level = 0 }) => {
+    const author = comment.author;
+    const username =
+        author && typeof author === 'object' && author.username
+            ? author.username
+            : comment.authorUsername || 'Utilisateur';
+    const avatar =
+        author && typeof author === 'object' && author.avatarUrl
+            ? author.avatarUrl
+            : comment.authorAvatarUrl || '/default-avatar.png';
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <button
-                onClick={() => router.back()}
-                className="mb-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-            >
-                ← Retour
-            </button>
+        <div
+            className="border rounded p-3 "
+            style={{ marginLeft: level * 20 }}
+            key={comment._id || comment.id}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <img
+                src={avatar || '/default-avatar.png'}
+                alt={username}
+                className="w-8 h-8 rounded-full object-cover"
+            />
+            <span className="font-medium text-sm">{username}</span>
+            <span className="text-xs ml-auto">
+            {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : ''}
+          </span>
+          </div>
+          <p className="text-sm  whitespace-pre-wrap">{comment.content}</p>
 
-            <div className="bg-white shadow-md rounded-2xl p-6 mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                    <img
-                        src={post.authorAvatarUrl || '/default-avatar.png'}
-                        alt={post.authorUsername}
-                        className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                        <h2 className="font-semibold text-lg">{post.authorUsername}</h2>
-                        <p className="text-gray-500 text-sm">{new Date(post.createdAt).toLocaleString()}</p>
-                    </div>
-                </div>
-                <p className="text-gray-800 text-base">{post.content}</p>
+          {/* Bouton répondre uniquement si c'est un commentaire racine (parentComment === postId) */}
+          {comment.parentComment === postId && (
+              <button
+                  onClick={() => {
+                    if (replyToCommentId === comment._id) {
+                      setReplyToCommentId(null);
+                      setCommentContent('');
+                    } else {
+                      setReplyToCommentId(comment._id);
+                      setCommentContent(`@${username} `);
+                    }
+                  }}
+                  className="text-blue-600 text-sm mt-1 hover:underline"
+              >
+                {replyToCommentId === comment._id ? 'Annuler' : 'Répondre'}
+              </button>
+          )}
+
+          {/* Affiche les enfants récursivement */}
+          {comment.children && comment.children.length > 0 && (
+              <div className="mt-3 space-y-3">
+                {comment.children.map((child) => (
+                    <CommentItem key={child._id || child.id} comment={child} level={level + 1} />
+                ))}
+              </div>
+          )}
+        </div>
+    );
+  };
+
+  if (loading) return <div className="text-center mt-10 text-gray-600">Chargement…</div>;
+  if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
+  if (!post) return <div className="text-center mt-10">Post non trouvé.</div>;
+
+  const commentsTree = buildCommentsTree(comments);
+
+  return (
+      <div className="max-w-2xl mx-auto p-4">
+        <button
+            onClick={() => router.back()}
+            className="mb-4 px-3 py-1  rounded "
+        >
+          ← Retour
+        </button>
+
+        {/* Post */}
+        <div className=" shadow-md rounded-2xl p-6 mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <img
+                src={post.authorAvatarUrl || '/default-avatar.png'}
+                alt={post.authorUsername || 'Auteur'}
+                className="w-12 h-12 rounded-full object-cover"
+            />
+            <div>
+              <h2 className="font-semibold text-lg">{post.authorUsername || 'Auteur'}</h2>
+              <p className="text-sm">
+                {post.createdAt ? new Date(post.createdAt).toLocaleString() : ''}
+              </p>
             </div>
+          </div>
+          <p className=" text-base whitespace-pre-wrap">{post.content}</p>
+        </div>
 
-            <div className="mb-6">
+        {/* Ajouter un commentaire ou réponse */}
+        <div className="mb-6">
         <textarea
             className="w-full border rounded p-2 mb-2"
             rows={3}
-            placeholder="Ajouter un commentaire..."
+            placeholder={replyToCommentId ? 'Répondre au commentaire...' : 'Ajouter un commentaire...'}
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
             disabled={postingComment}
         />
-                <button
-                    onClick={handleAddComment}
-                    disabled={postingComment}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {postingComment ? 'Envoi...' : 'Envoyer'}
-                </button>
-            </div>
-
-            {/* Ici tu peux afficher la liste des commentaires si tu veux */}
+          <button
+              onClick={handleAddComment}
+              disabled={postingComment}
+              className="px-4 py-2   rounded  disabled:opacity-50"
+          >
+            {postingComment ? 'Envoi...' : 'Envoyer'}
+          </button>
         </div>
-    );
+
+        {/* Liste commentaires */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Commentaires</h3>
+          {commentsTree.length === 0 ? (
+              <p className="">Aucun commentaire pour l’instant.</p>
+          ) : (
+              commentsTree.map((comment) => <CommentItem key={comment._id || comment.id} comment={comment} />)
+          )}
+        </div>
+      </div>
+  );
 }
