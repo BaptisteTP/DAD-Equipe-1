@@ -1,6 +1,7 @@
 const axios = require('axios');
 const Post  = require('../models/Post');
 const Like = require('../models/Like');
+const Comment = require('../models/Comment'); // Ajoute cette ligne si elle n'existe pas déjà
 
 // URL de base du user‐service (nom du service Docker ou URL en prod)
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:4001';
@@ -60,22 +61,28 @@ const getFeed = async (req, res, next) => {
     const token = req.headers.authorization;
     const currentUserId = req.user.userId;
 
-    // 1) Appel au user‐service pour avoir la liste des suivis
+    // 1) Obtenir les IDs des utilisateurs suivis
     const { data: followingUsers } = await axios.get(
-        // <— ici on passe /api/follows et non /api/users
-        `${USER_SERVICE_URL}/api/follows/${currentUserId}/following`,
-        { headers: { Authorization: token } }
+      `${USER_SERVICE_URL}/api/follows/${currentUserId}/following`,
+      { headers: { Authorization: token } }
     );
     const followingIds = followingUsers.map(u => u._id);
+    followingIds.push(currentUserId); // Inclure ses propres posts
 
-    // Inclure ses propres posts
-    followingIds.push(currentUserId);
-
-    // 2) Récupérer les posts de ces auteurs
+    // 2) Récupérer les posts
     const feed = await Post.find({ authorId: { $in: followingIds } })
-        .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean(); // lean() pour pouvoir modifier les objets plus facilement
 
-    res.json(feed);
+    // 3) Ajouter le nombre de commentaires à chaque post
+    const feedWithCommentCounts = await Promise.all(
+      feed.map(async (post) => {
+        const commentsCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentsCount };
+      })
+    );
+
+    res.json(feedWithCommentCounts);
   } catch (err) {
     next(err);
   }

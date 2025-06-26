@@ -126,7 +126,7 @@ export default function MyProfilePage() {
 
   const tabs = {
     posts,
-    liked: likedPosts,
+    liked: likedPosts, 
   }
 
   return (
