@@ -88,7 +88,6 @@ export default function Navbar() {
 
         <div className="mt-6 space-y-4 pl-2">
           <ThemeDropdown />
-          <LanguageDropdown />
         </div>
       </div>
 

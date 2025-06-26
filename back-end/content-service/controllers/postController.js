@@ -17,6 +17,7 @@ const createPost = async (req, res, next) => {
         .status(400)
         .json({ message: 'Le contenu doit faire entre 1 et 280 caractères.' });
     }
+    const imageUrl = typeof req.body.imageUrl === 'string' ? req.body.imageUrl : null;
 
     const token = req.headers.authorization;
     const { data } = await axios.get(
@@ -29,6 +30,7 @@ const createPost = async (req, res, next) => {
       authorId:        req.user.userId,
       authorUsername:  username,
       authorAvatarUrl: avatarUrl,
+      ...(imageUrl && { imageUrl }) ,
       content,
     });
 

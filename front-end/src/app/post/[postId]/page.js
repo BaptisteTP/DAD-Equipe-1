@@ -235,6 +235,15 @@ export default function PostPage() {
             </div>
           </div>
           <p className=" text-base whitespace-pre-wrap">{post.content}</p>
+          {post.imageUrl && (
+              <div className="flex justify-center items-center radius-5 mt-4">
+                <img
+                    src={post.imageUrl}
+                    alt="Image du post"
+                    className="w-full max-w-md h-60 object-contain radius-5"
+                />
+              </div>
+          )}
         </div>
 
         {/* Ajouter un commentaire ou réponse */}

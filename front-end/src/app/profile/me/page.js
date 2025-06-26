@@ -226,6 +226,7 @@ export default function MyProfilePage() {
                       authorId={post.authorId}
                       username={post.authorUsername}
                       image={post.authorAvatarUrl || defaultAvatar.src}
+                      postImage={post.imageUrl}
                       content={post.content}
                       like={post.likesCount}
                       comment={post.commentsCount ?? 0}

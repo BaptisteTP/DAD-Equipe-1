@@ -137,6 +137,7 @@ export default function HomePage() {
                 image={post.authorAvatarUrl}
                 username={post.authorUsername}
                 content={post.content}
+                postImage={post.imageUrl}
                 like={post.likesCount}
                 comment={post.commentsCount ?? 0}
                 share={0}

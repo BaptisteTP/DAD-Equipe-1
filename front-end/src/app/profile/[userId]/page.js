@@ -296,6 +296,7 @@ export default function OtherProfilePage() {
                   authorId={post.authorId || userId}
                   username={post.authorUsername}
                   image={post.authorAvatarUrl || defaultAvatar.src}
+                  postImage={post.imageUrl}
                   content={post.content}
                   like={post.likesCount}
                   comment={post.commentsCount ?? 0}
