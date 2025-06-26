@@ -84,9 +84,6 @@ export default function Navbar() {
           <div onClick={() => handleRedirect('/search')}>
             <NavItem icon={<SearchIcon />} label="Search" />
           </div>
-          <div onClick={() => handleRedirect('/notifications')}>
-            <NavItem icon={<NotifyIcon />} label="Notif" />
-          </div>
         </nav>
 
         <div className="mt-6 space-y-4 pl-2">
@@ -198,7 +195,7 @@ function NotifyIcon(props) {
       fill="none"
       viewBox="0 0 24 24"
       strokeWidth="1.5"
-      stroke="currentColor"
+      stroke="grey"
     >
       <path
         strokeLinecap="round"
