@@ -19,6 +19,8 @@ const createPost = async (req, res, next) => {
     }
     const imageUrl = typeof req.body.imageUrl === 'string' ? req.body.imageUrl : null;
 
+    const videoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl : null;
+
     const token = req.headers.authorization;
     const { data } = await axios.get(
       `${USER_SERVICE_URL}/api/users/${req.user.userId}`,
@@ -31,6 +33,7 @@ const createPost = async (req, res, next) => {
       authorUsername:  username,
       authorAvatarUrl: avatarUrl,
       ...(imageUrl && { imageUrl }) ,
+      ...(videoUrl && { videoUrl }),
       content,
     });
 

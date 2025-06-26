@@ -7,11 +7,13 @@ import { jwtDecode } from 'jwt-decode';
 export default function CreatePostPage() {
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [loadingUser, setLoadingUser] = useState(true);
   const fileInputRef = useRef(null);
+  const videoInputRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -46,6 +48,37 @@ export default function CreatePostPage() {
     fetchUser();
   }, []);
 
+  const handleUploadVideo = async (e) => {
+    const videoFile = e.target.files?.[0];
+    if (!videoFile) return;
+
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append('file', videoFile); // CORRIGÉ : utiliser "file", pas "videoFile"
+    formData.append('upload_preset', 'projet_preset');
+    // `resource_type` est défini automatiquement si tu utilises le bon endpoint
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/daqtp8x9y/video/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.secure_url) {
+        setVideoUrl(data.secure_url); // CORRIGÉ : on stocke l’URL dans le state
+      } else {
+        alert("Échec de l'upload vidéo.");
+      }
+    } catch (err) {
+      alert("Erreur d'upload vidéo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -54,21 +87,23 @@ export default function CreatePostPage() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'projet_preset'); // Ton preset Cloudinary
+    formData.append('upload_preset', 'projet_preset');
+
     try {
       const res = await fetch('https://api.cloudinary.com/v1_1/daqtp8x9y/image/upload', {
         method: 'POST',
         body: formData,
       });
+
       const data = await res.json();
 
       if (data.secure_url) {
         setImageUrl(data.secure_url);
       } else {
-        alert("Échec de l'upload : " + (data.error?.message || 'Inconnue'));
+        alert("Échec de l'upload image.");
       }
     } catch (err) {
-      alert("Erreur d'upload");
+      alert("Erreur d'upload image.");
     } finally {
       setUploading(false);
     }
@@ -88,7 +123,7 @@ export default function CreatePostPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content, imageUrl }),
+        body: JSON.stringify({ content, imageUrl, videoUrl }), // ✅ Ajout du videoUrl
       });
 
       const data = await res.json();
@@ -98,8 +133,10 @@ export default function CreatePostPage() {
         return;
       }
 
+      // Réinitialisation
       setContent('');
       setImageUrl('');
+      setVideoUrl('');
       setError('');
       router.push('/home');
     } catch {
@@ -119,7 +156,7 @@ export default function CreatePostPage() {
               onClick={handlePost}
               disabled={content.trim().length === 0 || uploading}
               className={`px-4 py-1 rounded-full text-white font-semibold text-sm transition 
-            ${content.trim().length > 0 && !uploading ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-200 cursor-not-allowed'}`}
+          ${content.trim().length > 0 && !uploading ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-200 cursor-not-allowed'}`}
           >
             {uploading ? 'Envoi...' : 'Post'}
           </button>
@@ -147,6 +184,24 @@ export default function CreatePostPage() {
           />
           {imageUrl && (
               <img src={imageUrl} alt="Aperçu" className="mt-2 rounded max-h-64 object-cover" />
+          )}
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Vidéo (facultative)</label>
+          <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              onChange={handleUploadVideo}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              disabled={uploading}
+          />
+          {videoUrl && (
+              <video controls className="mt-2 rounded max-h-64 w-full">
+                <source src={videoUrl} type="video/mp4" />
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
           )}
         </div>
 

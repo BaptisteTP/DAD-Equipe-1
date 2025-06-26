@@ -244,6 +244,18 @@ export default function PostPage() {
                 />
               </div>
           )}
+          {post.videoUrl && (
+              <div className="flex justify-center items-center mb-3">
+                <video
+                    src={post.videoUrl}
+                    className="w-[320px] h-[240px] object-contain rounded"
+                    autoPlay
+                    loop
+                    muted
+                    controls
+                />
+              </div>
+          )}
         </div>
 
         {/* Ajouter un commentaire ou réponse */}

@@ -227,6 +227,7 @@ export default function MyProfilePage() {
                       username={post.authorUsername}
                       image={post.authorAvatarUrl || defaultAvatar.src}
                       postImage={post.imageUrl}
+                      postVideo={post.videoUrl}
                       content={post.content}
                       like={post.likesCount}
                       comment={post.commentsCount ?? 0}

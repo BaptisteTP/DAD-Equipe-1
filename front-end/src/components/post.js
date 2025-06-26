@@ -12,6 +12,7 @@ const Post = ({
                   content,
                   image,
                   postImage,
+    postVideo,
                   like,
                   comment,
                   liked = false,
@@ -55,6 +56,18 @@ const Post = ({
                             className="w-[320px] h-[240px] object-contain rounded"
                         />
                     </a>
+                </div>
+            )}
+            {postVideo && (
+                <div className="flex justify-center items-center mb-3">
+                    <video
+                        src={postVideo}
+                        className="w-[320px] h-[240px] object-contain rounded"
+                        autoPlay
+                        loop
+                        muted
+                        controls
+                    />
                 </div>
             )}
 
