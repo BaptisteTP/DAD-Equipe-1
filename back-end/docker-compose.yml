@@ -1,6 +1,3 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
   # --- Base de données pour user-service
   user-db:
@@ -55,6 +52,18 @@ services:
     depends_on:
       - content-db
       - user-service
+
+# --- API Gateway (NGINX)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "80:80"                # expose le port 80 pour tout l'API
+    depends_on:
+      - user-service
+      - content-service
 
 volumes:
   user-db-data:
