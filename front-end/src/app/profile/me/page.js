@@ -222,6 +222,7 @@ export default function MyProfilePage() {
                   return (
                     <Post
                       key={post._id}
+                      _id ={post._id}
                       authorId={post.authorId}
                       username={post.authorUsername}
                       image={post.authorAvatarUrl || defaultAvatar.src}

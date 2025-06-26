@@ -292,6 +292,7 @@ export default function OtherProfilePage() {
               return (
                 <Post
                   key={post._id}
+                  _id={post._id}
                   authorId={post.authorId || userId}
                   username={post.authorUsername}
                   image={post.authorAvatarUrl || defaultAvatar.src}
