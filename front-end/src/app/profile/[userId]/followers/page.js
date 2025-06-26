@@ -40,39 +40,39 @@ export default function OtherFollowersPage() {
 
     return (
         <div className={`flex flex-col min-h-screen transition-colors duration-300 ${themeClasses}`}>
-            {/* ← Retour + onglets */}
-            <div className="flex items-center mb-6">
-                <button
-                    onClick={() => router.push(`/profile/${userId}`)}
-                    className="mr-4 text-gray-800 hover:text-gray-900"
-                >
-                    ← Retour
-                </button>
-                <div className="flex space-x-6 border-b">
-                    <button
-                        onClick={() => router.push(`/profile/${userId}/following`)}
-                        className={`pb-2 ${
-                            activeTab === 'following'
-                                ? 'border-b-2 border-black text-black'
-                                : 'text-gray-500'
-                        }`}
-                    >
-                        Abonnements
-                    </button>
-                    <button
-                        onClick={() => router.push(`/profile/${userId}/followers`)}
-                        className={`pb-2 ${
-                            activeTab === 'followers'
-                                ? 'border-b-2 border-black text-black'
-                                : 'text-gray-500'
-                        }`}
-                    >
-                        Abonnés
-                    </button>
-                </div>
-            </div>
+            /* ← Retour + onglets */
+                        <div className="flex items-center mb-6">
+                            <button
+                                onClick={() => router.push(`/profile/${userId}`)}
+                                className="mr-4 hover:text-gray-900"
+                            >
+                                ← Retour
+                            </button>
+                            <div className="flex space-x-6 border-b">
+                                <button
+                                    onClick={() => router.push(`/profile/${userId}/following`)}
+                                    className={`pb-2 ${
+                                        activeTab === 'following'
+                                            ? 'border-b-2 border-black text-black'
+                                            : ''
+                                    }`}
+                                >
+                                    Abonnements
+                                </button>
+                                <button
+                                    onClick={() => router.push(`/profile/${userId}/followers`)}
+                                    className={`pb-2 ${
+                                        activeTab === 'followers'
+                                            ? 'border-b-2 border-black text-black'
+                                            : ''
+                                    }`}
+                                >
+                                    Abonnés
+                                </button>
+                            </div>
+                        </div>
 
-            {/* Contenu */}
+                        {/* Contenu */}
             {loading ? (
                 <p>Chargement…</p>
             ) : error ? (
