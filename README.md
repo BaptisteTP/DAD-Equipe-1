@@ -1,3 +1,10 @@
+Projet de développement WEB : 
+Promotion : FISA A3 Info
+Groupe : 1
+
+Figma :  https://www.figma.com/design/XSSerPqNnU9MTk86BMFm9b/Untitled?node-id=0-1&m=dev&t=K0SymTVqkBqRdEZ8-1
+
+===
 # Application Microservices – React & Express
 
 Ceci est une application web basée sur une architecture **microservices**, avec un frontend développé en **React** et deux services backend en **Express.js**.

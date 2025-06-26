@@ -121,7 +121,7 @@ export default function HomePage() {
         <div className="hidden lg:block w-64 shrink-0 border-r border-gray-300">
           <Navbar />
         </div>
-        <main className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+        <main className="flex-1 mt-10 mb-5 px-4 py-6 space-y-6 overflow-y-auto">
           {loading && <p>Chargement des posts…</p>}
           {error && <p className="text-red-500">{error}</p>}
           {!loading && !error && posts.length === 0 && (
@@ -132,10 +132,13 @@ export default function HomePage() {
             posts.map((post) => (
               <Post
                 key={post._id}
+                _id ={post._id}
                 authorId={post.authorId}
                 image={post.authorAvatarUrl}
                 username={post.authorUsername}
                 content={post.content}
+                postImage={post.imageUrl}
+                postVideo={post.videoUrl}
                 like={post.likesCount}
                 comment={post.commentsCount ?? 0}
                 share={0}

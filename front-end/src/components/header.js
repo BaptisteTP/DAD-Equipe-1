@@ -47,7 +47,9 @@ export default function Header({ onBurgerClick  }) {
   }, []);
 
   return (
-    <header className="relative border-b rounded-b-md py-2 px-6 flex items-center w-full h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b rounded-b-md py-2 px-6 flex items-center w-full h-16 bg-white dark:bg-gray-900"
+          style={{ zIndex: 10, position: 'fixed', left: 0, top: 0 }}
+>
 
       {/* Burger à gauche */}
       <button

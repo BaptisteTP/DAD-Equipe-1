@@ -58,6 +58,7 @@ export default function Navbar() {
   return (
     <aside
       className={`flex flex-col justify-between w-64 h-screen p-6 border-r bg-[var(--bg-color)] text-[var(--text-color)] ${themeClasses}`}
+      style={{ zIndex: 1000, position: 'fixed', left: 0, top: 0 }}
     >
       <div>
         <div className="flex flex-col mb-10">
@@ -80,20 +81,13 @@ export default function Navbar() {
           <div onClick={() => handleRedirect('/home')}>
             <NavItem icon={<HomeIcon />} label="Home" />
           </div>
-          <div onClick={() => handleRedirect('/profile/me/likes')}>
-            <NavItem icon={<LikeIcon />} label="Like" />
-          </div>
           <div onClick={() => handleRedirect('/search')}>
             <NavItem icon={<SearchIcon />} label="Search" />
-          </div>
-          <div onClick={() => handleRedirect('/notifications')}>
-            <NavItem icon={<NotifyIcon />} label="Notif" />
           </div>
         </nav>
 
         <div className="mt-6 space-y-4 pl-2">
           <ThemeDropdown />
-          <LanguageDropdown />
         </div>
       </div>
 
@@ -200,7 +194,7 @@ function NotifyIcon(props) {
       fill="none"
       viewBox="0 0 24 24"
       strokeWidth="1.5"
-      stroke="currentColor"
+      stroke="grey"
     >
       <path
         strokeLinecap="round"

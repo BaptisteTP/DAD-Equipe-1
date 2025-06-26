@@ -126,7 +126,7 @@ export default function MyProfilePage() {
 
   const tabs = {
     posts,
-    liked: likedPosts,
+    liked: likedPosts, 
   }
 
   return (
@@ -222,9 +222,12 @@ export default function MyProfilePage() {
                   return (
                     <Post
                       key={post._id}
+                      _id ={post._id}
                       authorId={post.authorId}
                       username={post.authorUsername}
                       image={post.authorAvatarUrl || defaultAvatar.src}
+                      postImage={post.imageUrl}
+                      postVideo={post.videoUrl}
                       content={post.content}
                       like={post.likesCount}
                       comment={post.commentsCount ?? 0}

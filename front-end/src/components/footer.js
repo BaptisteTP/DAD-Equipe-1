@@ -8,8 +8,8 @@ export default function Footer() {
   const { themeClasses } = useThemeLang();
 
   return (
-    <footer className={`fixed bottom-0 left-0 right-0 z-50 border-t dark:bg-gray-900 ${themeClasses}`}>
-      <nav className="flex justify-around items-center h-16 text-gray-700 dark:text-gray-200">
+    <footer className={`fixed bottom-0 left-0 right-0 z-50 border-t bg-[var(--bg-color)] text-[var(--text-color)] ${themeClasses}`}>
+      <nav className="flex justify-around items-center h-16">
         {/* Home */}
         <Link href="/home" aria-label="Accueil" className="flex flex-col items-center hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -38,26 +38,6 @@ export default function Footer() {
           </svg>
         </Link>
 
-        {/* Notifications */}
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="flex flex-col items-center hover:text-blue-600"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 0 0
-              5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6
-              6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312
-              6.022c1.733.64 3.56 1.085 5.455 1.31m5.714
-              0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3
-              0 1 1-5.714 0"
-            />
-          </svg>
-        </button>
       </nav>
     </footer>
   );

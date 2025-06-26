@@ -6,6 +6,8 @@ const PostSchema = new Schema({
   authorUsername:  { type: String, required: true },
   authorAvatarUrl: { type: String, default: '' },
   content:         { type: String, required: true, maxlength: 280 },
+  imageUrl:        { type: String, default: '' },
+  videoUrl:        { type: String, default: '' },
   likesCount:      { type: Number, default: 0 },
 }, { timestamps: true });
 

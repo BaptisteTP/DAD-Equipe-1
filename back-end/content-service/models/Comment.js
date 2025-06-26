@@ -18,6 +18,8 @@ const CommentSchema = new Schema(
       required: true,
       maxlength: 280,
     },
+      authorUsername:  { type: String, required: true },
+      authorAvatarUrl: { type: String, default: '' },
     parentComment: {
       type: Schema.Types.ObjectId,
       ref: 'Comment',

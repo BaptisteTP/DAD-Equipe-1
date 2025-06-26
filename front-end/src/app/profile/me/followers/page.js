@@ -68,7 +68,7 @@ export default function FollowersPage() {
                         className={`pb-2 ${
                             activeTab === 'following'
                                 ? 'border-b-2 border-black text-black'
-                                : 'text-gray-500'
+                                : ''
                         }`}
                     >
                         Abonnements
@@ -78,7 +78,7 @@ export default function FollowersPage() {
                         className={`pb-2 ${
                             activeTab === 'followers'
                                 ? 'border-b-2 border-black text-black'
-                                : 'text-gray-500'
+                                : ''
                         }`}
                     >
                         Abonnés
